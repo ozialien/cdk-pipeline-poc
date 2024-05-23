@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import {CodeBuildStep, CodePipeline, CodePipelineSource} from "aws-cdk-lib/pipelines";
 import { Construct } from 'constructs';
 import { CDKPipelinePocStage } from './cdk-pipeline-poc-stage';
+import { ManualApprovalStep } from 'aws-cdk-lib/pipelines';
 
 export class CdkPipilinePocStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -23,7 +24,12 @@ export class CdkPipilinePocStack extends cdk.Stack {
             })
           });
 
-        const deploy = new CDKPipelinePocStage(this, 'Deploy');
-        const deployStage = cdkpipeline.addStage(deploy);
+        const deployMatlab = new CDKPipelinePocStage(this, 'Matlab');
+        const deployMatlabStage = cdkpipeline.addStage(deployMatlab);
+
+        deployMatlabStage.addPost(new ManualApprovalStep('approval'));
+
+        const deployDev = new CDKPipelinePocStage(this, 'Matson-DEV');
+        const deployDevStage = cdkpipeline.addStage(deployDev);
     }
 }

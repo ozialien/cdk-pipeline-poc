@@ -6,6 +6,6 @@ export class CDKPipelinePocStage extends Stage {
     constructor(scope: Construct, id: string, props?: StageProps) {
         super(scope, id, props);
 
-        new CdkAppStack(this, 'WebService');
+        new CdkAppStack(this, 'CdkPocStack');
     }
 }
