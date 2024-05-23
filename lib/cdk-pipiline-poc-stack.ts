@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import {CodeBuildStep, CodePipeline, CodePipelineSource} from "aws-cdk-lib/pipelines";
 import { Construct } from 'constructs';
+import { CDKPipelinePocStage } from './cdk-pipeline-poc-stage';
 
 export class CdkPipilinePocStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -22,5 +23,7 @@ export class CdkPipilinePocStack extends cdk.Stack {
             })
           });
 
+        const deploy = new CDKPipelinePocStage(this, 'Deploy');
+        const deployStage = cdkpipeline.addStage(deploy);
     }
 }
