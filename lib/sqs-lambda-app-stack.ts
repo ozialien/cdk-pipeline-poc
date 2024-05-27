@@ -4,7 +4,7 @@ import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
 import * as eventsources from 'aws-cdk-lib/aws-lambda-event-sources';
 
-export class CdkAppStack extends cdk.Stack {
+export class SQStoLambdaAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -23,6 +23,18 @@ export class CdkAppStack extends cdk.Stack {
     
     //Setup SQS to lambda invoke
     cdkpipelinepoclambda.addEventSource(new eventsources.SqsEventSource(cdkpipelinepocqueue));
+
+    //create an output
+    new cdk.CfnOutput(this, 'CDKPipelinePocQueueArn', {
+      value: cdkpipelinepocqueue.queueArn,
+      description: 'Cdk Pipeline Poc queue arn',
+      exportName: 'CDKPipelinePocQueueArn',
+    });
+    new cdk.CfnOutput(this, 'CdkPipelinePocLambdaArn', {
+      value: cdkpipelinepoclambda.functionArn,
+      description: 'Cdk Pipeline Poc Lambda arn',
+      exportName: 'CdkPipelinePocLambdaArn',
+    });
 
   }
 }

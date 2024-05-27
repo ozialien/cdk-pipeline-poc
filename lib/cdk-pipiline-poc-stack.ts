@@ -29,7 +29,7 @@ export class CdkPipilinePocStack extends cdk.Stack {
 
         deployMatlabStage.addPost(new ManualApprovalStep('approval'));
 
-        const deployDev = new CDKPipelinePocStage(this, 'Matson-DEV');
-        const deployDevStage = cdkpipeline.addStage(deployDev);
+        // const deployDev = new CDKPipelinePocStage(this, 'Matson-DEV');
+        // const deployDevStage = cdkpipeline.addStage(deployDev);
     }
 }
