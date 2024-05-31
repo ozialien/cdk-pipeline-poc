@@ -22,7 +22,7 @@ export class CdkPipilinePocStack extends cdk.Stack {
                 'nsalbarde/cdk-pipeline-poc',
                 "main",
                 {
-                  connectionArn: "arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props.codeStarId}"
+                  connectionArn: `arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props?.codeStarId}`
                 }
               ),
               commands: ["npm ci", "npm run build", "npx cdk synth"]
