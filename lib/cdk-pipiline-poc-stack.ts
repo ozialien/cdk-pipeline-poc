@@ -31,6 +31,12 @@ export class CdkPipilinePocStack extends cdk.Stack {
 
         const matlabAccount = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/account');
         const matlabRegion = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/region');
+        
+        new cdk.CfnOutput(this, 'SSMParamters', {
+          value: matlabAccount+matlabRegion,
+          description: 'SSM Parameters received',
+          exportName: 'SSMParameters',
+        });
 
         const deployMatlab = new CDKPipelinePocStage(this, 'Matlab', {
           env: {

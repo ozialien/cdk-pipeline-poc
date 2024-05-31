@@ -8,6 +8,12 @@ export class SQStoLambdaAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    new cdk.CfnOutput(this, 'DeployentEnvironment', {
+      value: this.environment,
+      description: 'Deployent Environment',
+      exportName: 'DeployentEnvironment',
+    });
+    
     //application services will be added here
     //Setting up SQS queue
     const cdkpipelinepocqueue = new sqs.Queue(this, 'CdkPipelinePocQueue', {
