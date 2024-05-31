@@ -3,11 +3,16 @@ import {CodeBuildStep, CodePipeline, CodePipelineSource} from "aws-cdk-lib/pipel
 import { Construct } from 'constructs';
 import { CDKPipelinePocStage } from './cdk-pipeline-poc-stage';
 import { ManualApprovalStep } from 'aws-cdk-lib/pipelines';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
+
+interface PipelineStackProps extends cdk.StackProps{
+  codeStarId: string,
+}
 
 export class CdkPipilinePocStack extends cdk.Stack {
-    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    constructor(scope: Construct, id: string, props?: PipelineStackProps) {
         super(scope, id, props);
-
+ 
         // The basic pipeline declaration. This sets the initial structure
         // of our pipeline
         const cdkpipeline = new CodePipeline(this, "CdkPipeline", {
@@ -17,14 +22,22 @@ export class CdkPipilinePocStack extends cdk.Stack {
                 'nsalbarde/cdk-pipeline-poc',
                 "main",
                 {
-                  connectionArn: "arn:aws:codestar-connections:us-west-2:275416279984:connection/a96e8694-d581-49b7-a402-7eb4aa97fe00"
+                  connectionArn: "arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props.codeStarId}"
                 }
               ),
               commands: ["npm ci", "npm run build", "npx cdk synth"]
             })
           });
 
-        const deployMatlab = new CDKPipelinePocStage(this, 'Matlab');
+        const matlabAccount = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/account');
+        const matlabRegion = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/region');
+
+        const deployMatlab = new CDKPipelinePocStage(this, 'Matlab', {
+          env: {
+            account: matlabAccount,
+            region: matlabRegion,
+          }
+        });
         const deployMatlabStage = cdkpipeline.addStage(deployMatlab);
 
         deployMatlabStage.addPost(new ManualApprovalStep('approval'));
