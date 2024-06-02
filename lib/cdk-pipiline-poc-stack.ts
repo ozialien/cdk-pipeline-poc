@@ -26,7 +26,9 @@ export class CdkPipilinePocStack extends cdk.Stack {
                   connectionArn: `arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props?.codeStarId}`
                 }
               ),
-              commands: [`cd ${props?.sbLambdaPrjFldrName}`,
+              commands: ["pwd",
+                        "ls -ltr",
+                        `cd ${props?.sbLambdaPrjFldrName}`,
                         "./mvnw package -DskipTests", 
                         "cd ..", 
                         "npm ci", 
