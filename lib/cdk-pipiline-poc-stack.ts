@@ -7,6 +7,7 @@ import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 interface PipelineStackProps extends cdk.StackProps{
   codeStarId: string,
+  sbLambdaPrjFldrName: string,
 }
 
 export class CdkPipilinePocStack extends cdk.Stack {
@@ -25,7 +26,12 @@ export class CdkPipilinePocStack extends cdk.Stack {
                   connectionArn: `arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props?.codeStarId}`
                 }
               ),
-              commands: ["npm ci", "npm run build", "npx cdk synth"]
+              commands: [`cd ${props?.sbLambdaPrjFldrName}`,
+                        "./mvnw package -DskipTests", 
+                        "cd ..", 
+                        "npm ci", 
+                        "npm run build", 
+                        "npx cdk synth"]
             })
           });
 
