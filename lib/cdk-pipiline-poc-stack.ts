@@ -33,21 +33,21 @@ export class CdkPipilinePocStack extends cdk.Stack {
         const matlabAccount = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/account');
         const matlabRegion = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/region');
         
-        new cdk.CfnOutput(this, 'SSMParamters', {
-          value: matlabAccount+matlabRegion,
-          description: 'SSM Parameters received',
-          exportName: 'SSMParameters',
-        });
+        // new cdk.CfnOutput(this, 'SSMParamters', {
+        //   value: matlabAccount+matlabRegion,
+        //   description: 'SSM Parameters received',
+        //   exportName: 'SSMParameters',
+        // });
 
-        const deployMatlab = new CDKPipelinePocStage(this, 'Matlab', {
-          env: {
-            account: matlabAccount,
-            region: matlabRegion,
-          }
-        });
-        const deployMatlabStage = cdkpipeline.addStage(deployMatlab);
+        // const deployMatlab = new CDKPipelinePocStage(this, 'Matlab', {
+        //   env: {
+        //     account: matlabAccount,
+        //     region: matlabRegion,
+        //   }
+        // });
+        // const deployMatlabStage = cdkpipeline.addStage(deployMatlab);
 
-        deployMatlabStage.addPost(new ManualApprovalStep('approval'));
+        // deployMatlabStage.addPost(new ManualApprovalStep('approval'));
 
         // const deployDev = new CDKPipelinePocStage(this, 'Matson-DEV');
         // const deployDevStage = cdkpipeline.addStage(deployDev);

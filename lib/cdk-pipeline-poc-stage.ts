@@ -8,9 +8,9 @@ export class CDKPipelinePocStage extends Stage {
         super(scope, id, props);
 
         //setup SQS to Lambda integration stack
-        new SQStoLambdaAppStack(this, 'CdkPipelinePocSQStoLambdaAppStack', {
-            env: props?.env,
-        });
+        // new SQStoLambdaAppStack(this, 'CdkPipelinePocSQStoLambdaAppStack', {
+        //     env: props?.env,
+        // });
 
         //Creating new EventBus stack1
         new EventBusAppStack(this, 'CdkPipelinePocEventBusAppStack'); 
