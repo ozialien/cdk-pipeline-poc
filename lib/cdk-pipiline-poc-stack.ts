@@ -43,11 +43,8 @@ export class CdkPipilinePocStack extends cdk.Stack {
                   
                   build: {
                     commands: [`cd ${props?.sbLambdaPrjFldrName}`,
-                              "mvn package -DskipTests"],  
-                  },
-
-                  post_build: {
-                    commands:["cd .."]
+                              "mvn package -DskipTests",
+                              "cd .."],  
                   }
                 }
               }),
