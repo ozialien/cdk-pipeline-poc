@@ -27,7 +27,10 @@ export class CdkPipilinePocStack extends cdk.Stack {
                   connectionArn: `arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props?.codeStarId}`
                 }
               ),
-              commands: ["npm ci", 
+              commands: [`cd ${props?.sbLambdaPrjFldrName}`,
+                        "mvn package -DskipTests",
+                        "cd ..",
+                        "npm ci", 
                         "npm run build", 
                         "npx cdk synth"]
             }),
@@ -35,18 +38,8 @@ export class CdkPipilinePocStack extends cdk.Stack {
               partialBuildSpec: codebuild.BuildSpec.fromObject({
                 phases: {
                   pre_build: {
-                    commands: ["java -version",
-                              "mvn -version",
-                              "export JAVA_HOME=$JAVA_21_HOME", 
+                    commands: ["export JAVA_HOME=$JAVA_21_HOME", 
                               "mvn -version"],
-                  },
-                  
-                  build: {
-                    commands: ["pwd",
-                              "ls -ltra",
-                              `cd ${props?.sbLambdaPrjFldrName}`,
-                              "mvn package -DskipTests",
-                              "cd .."],  
                   }
                 }
               }),
