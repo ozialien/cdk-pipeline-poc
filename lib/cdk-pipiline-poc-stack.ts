@@ -4,6 +4,7 @@ import { Construct } from 'constructs';
 import { CDKPipelinePocStage } from './cdk-pipeline-poc-stage';
 import { ManualApprovalStep } from 'aws-cdk-lib/pipelines';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 
 interface PipelineStackProps extends cdk.StackProps{
   codeStarId: string,
@@ -35,7 +36,12 @@ export class CdkPipilinePocStack extends cdk.Stack {
                         "npm ci", 
                         "npm run build", 
                         "npx cdk synth"]
-            })
+            }),
+            codeBuildDefaults: {
+              buildEnvironment: {
+                buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_ARM_3,
+              },
+            }
           });
 
         const matlabAccount = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/account');
