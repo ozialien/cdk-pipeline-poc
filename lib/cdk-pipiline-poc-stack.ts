@@ -28,12 +28,9 @@ export class CdkPipilinePocStack extends cdk.Stack {
                 }
               ),
               commands: [`cd ${props?.sbLambdaPrjFldrName}`,
-                        "pwd", 
-                        "ls -ltra",
                         "java -version",
                         "mvn -version",
                         "export JAVA_HOME=$JAVA_21_HOME",
-                        "java -version",
                         "mvn -version",
                         "mvn package -DskipTests", 
                         "cd ..", 
@@ -57,15 +54,10 @@ export class CdkPipilinePocStack extends cdk.Stack {
         //   exportName: 'SSMParameters',
         // });
 
-        // const deployMatlab = new CDKPipelinePocStage(this, 'Matlab', {
-        //   env: {
-        //     account: matlabAccount,
-        //     region: matlabRegion,
-        //   }
-        // });
-        // const deployMatlabStage = cdkpipeline.addStage(deployMatlab);
+        const deployMatlab = new CDKPipelinePocStage(this, 'Matlab');
+        const deployMatlabStage = cdkpipeline.addStage(deployMatlab);
 
-        // deployMatlabStage.addPost(new ManualApprovalStep('approval'));
+        deployMatlabStage.addPost(new ManualApprovalStep('approval'));
 
         // const deployDev = new CDKPipelinePocStage(this, 'Matson-DEV');
         // const deployDevStage = cdkpipeline.addStage(deployDev);

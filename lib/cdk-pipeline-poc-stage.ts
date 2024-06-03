@@ -2,6 +2,7 @@ import { Stage, StageProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { SQStoLambdaAppStack } from './sqs-lambda-app-stack';
 import { EventBusAppStack } from './eventbus-app-stack';
+import { SpringbootApiLambdaStack } from './sb-lambda-app-stack';
 
 export class CDKPipelinePocStage extends Stage {
     constructor(scope: Construct, id: string, props?: StageProps) {
@@ -13,6 +14,8 @@ export class CDKPipelinePocStage extends Stage {
         // });
 
         //Creating new EventBus stack1
-        new EventBusAppStack(this, 'CdkPipelinePocEventBusAppStack'); 
+        // new EventBusAppStack(this, 'CdkPipelinePocEventBusAppStack');
+        
+        new SpringbootApiLambdaStack(this, 'SpringbootApiLambdaStack');
     }
 }
