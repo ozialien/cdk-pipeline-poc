@@ -52,7 +52,12 @@ export class CdkPipilinePocStack extends cdk.Stack {
         const matlabAccount = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/account');
         const matlabRegion = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/region');
 
-        const deployMatlab = new CDKPipelinePocStage(this, 'Matlab');
+        const deployMatlab = new CDKPipelinePocStage(this, 'Matlab',{
+          env:{
+            account: process.env.CDK_DEFAULT_ACCOUNT,
+            region: process.env.CDK_DEFAULT_REGION
+          }
+        });
         const deployMatlabStage = cdkpipeline.addStage(deployMatlab);
 
         deployMatlabStage.addPost(new ManualApprovalStep('approval'));
