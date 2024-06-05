@@ -28,7 +28,7 @@ public class DataAccessConfig {
     @Autowired
     private SecretsManagerService secretsManagerService;
 
-    @Value("${datasource.secret-id}")
+    @Value("${datasource_secret_id}")
     String datasourceSecretId;
 
     @Value("${datasource.db-schema-name}")

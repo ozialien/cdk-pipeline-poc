@@ -11,8 +11,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         //getting vpc for lambda
         const vpc = ec2.Vpc.fromLookup(this, 'VPC', {
             vpcId: 'vpc-42de9927'
-        });
-        
+        });        
         //getting security group for lambda
         const securityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, "SG", "sg-0ea85090b812c3265");
         //getting subnet for lambda  
@@ -29,7 +28,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
             vpcSubnets: { subnets:[subnet] },
             securityGroups: [securityGroup],
             environment: {
-                "datasource.secret-id": "lab/secretMGPOC/MySQL-hai33O",
+                "datasource_secret_id": "lab/secretMGPOC/MySQL-hai33O",
             }
         });
 
