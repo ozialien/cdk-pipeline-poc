@@ -22,8 +22,8 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
 
         //getting secret from secret manager
         const dbAccessSecretId = "lab/secretMGPOC/MySQL-hai33O";
-        const secretCompleteArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}}`;
-        const dbAccessSecret = secretMgr.Secret.fromSecretCompleteArn(this, 'SecretFromCompleteArn', secretCompleteArn);
+        // const secretCompleteArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}}`;
+        const dbAccessSecret = secretMgr.Secret.fromSecretNameV2(this, 'SecretFromName', 'lab/secretMGPOC/MySQL')
 
         //Setup Lambda Function
         const springBootApiLambdaCdkPoc = new Function(this, "SpringBootApiLambdaCdkPoc", {
