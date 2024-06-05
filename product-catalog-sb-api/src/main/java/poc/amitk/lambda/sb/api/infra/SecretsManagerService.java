@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-// import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
@@ -30,7 +29,7 @@ public class SecretsManagerService {
     public String getSecretValue(String secretId){
         logger.info("getting secret: {}", secretId);
         SecretsManagerClient secretsClient = SecretsManagerClient.builder()
-                .credentialsProvider(EnvironmentVariableCredentialsProvider.create()) //Will automatically pick it up from aws.profile system property or AWS_PROFILE environment var
+                .credentialsProvider(DefaultCredentialsProvider.create()) //Will automatically pick it up from aws.profile system property or AWS_PROFILE environment var
                 .build();
 
         try {

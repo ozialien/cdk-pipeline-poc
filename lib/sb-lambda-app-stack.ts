@@ -21,7 +21,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         const subnet = ec2.PrivateSubnet.fromSubnetAttributes(this, "subnet", { subnetId: "subnet-c56802b2" });
 
         //getting secret from secret manager
-        const dbAccessSecretId = "lab/secretMGPOC/MySQL-hai33O";
+        const dbAccessSecretId = "lab/secretMGPOC/MySQL";
         // const secretCompleteArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}}`;
         const secretCompleteArn = "arn:aws:secretsmanager:us-west-2:275416279984:secret:lab/secretMGPOC/MySQL-hai33O";
         const dbAccessSecret = secretMgr.Secret.fromSecretCompleteArn(this, 'SecretFromCompleteArn', secretCompleteArn);
