@@ -1,8 +1,9 @@
-import * as cdk from 'aws-cdk-lib'
+import * as cdk from 'aws-cdk-lib';
 import { Code, Function, Runtime, SnapStartConf } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-import * as apigateway from 'aws-cdk-lib/aws-apigateway'
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as secretMgr from 'aws-cdk-lib/aws-secretsmanager';
 
 export class SpringbootApiLambdaStack extends cdk.Stack{
     constructor(scope: Construct, id: string, props?: cdk.StackProps){
@@ -12,10 +13,17 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         const vpc = ec2.Vpc.fromLookup(this, 'VPC', {
             vpcId: 'vpc-42de9927'
         });        
+        
         //getting security group for lambda
         const securityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, "SG", "sg-0ea85090b812c3265");
+        
         //getting subnet for lambda  
         const subnet = ec2.PrivateSubnet.fromSubnetAttributes(this, "subnet", { subnetId: "subnet-c56802b2" });
+
+        //getting secret from secret manager
+        const dbAccessSecretId = "lab/secretMGPOC/MySQL-hai33O";
+        const secretCompleteArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}}`;
+        const dbAccessSecret = secretMgr.Secret.fromSecretCompleteArn(this, 'SecretFromCompleteArn', secretCompleteArn);
 
         //Setup Lambda Function
         const springBootApiLambdaCdkPoc = new Function(this, "SpringBootApiLambdaCdkPoc", {
@@ -28,9 +36,12 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
             vpcSubnets: { subnets:[subnet] },
             securityGroups: [securityGroup],
             environment: {
-                "datasource_secret_id": "lab/secretMGPOC/MySQL-hai33O",
+                "datasource_secret_id": dbAccessSecretId,
             }
         });
+
+        //grant function to read secret
+        dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
 
        // Define the API Gateway resource
         const api = new apigateway.LambdaRestApi(this, 'ProductCatalogSbApi', {
