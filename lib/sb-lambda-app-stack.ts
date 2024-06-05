@@ -23,12 +23,14 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         //getting secret from secret manager
         const dbAccessSecretId = "lab/secretMGPOC/MySQL-hai33O";
         // const secretCompleteArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}}`;
-        const dbAccessSecret = secretMgr.Secret.fromSecretNameV2(this, 'SecretFromName', 'lab/secretMGPOC/MySQL')
+        const secretCompleteArn = "arn:aws:secretsmanager:us-west-2:275416279984:secret:lab/secretMGPOC/MySQL-hai33O";
+        const dbAccessSecret = secretMgr.Secret.fromSecretCompleteArn(this, 'SecretFromCompleteArn', secretCompleteArn);
 
         //Setup Lambda Function
         const springBootApiLambdaCdkPoc = new Function(this, "SpringBootApiLambdaCdkPoc", {
             functionName: "ProductCatalogSbApiLambda",
             runtime: Runtime.JAVA_21,
+            memorySize: 2048,
             code: Code.fromAsset("product-catalog-sb-api/target/product-catalog-sb-api-0.0.1-SNAPSHOT.jar"),
             handler: "poc.amitk.lambda.sb.api.infra.StreamLambdaHandler::handleRequest",
             snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
