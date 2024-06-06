@@ -6,13 +6,8 @@ import { ManualApprovalStep } from 'aws-cdk-lib/pipelines';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 
-interface PipelineStackProps extends cdk.StackProps{
-  codeStarId: string,
-  sbLambdaPrjFldrName: string,
-}
-
 export class CdkPipilinePocStack extends cdk.Stack {
-    constructor(scope: Construct, id: string, props?: PipelineStackProps) {
+    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
  
         // The basic pipeline declaration. This sets the initial structure
@@ -20,6 +15,7 @@ export class CdkPipilinePocStack extends cdk.Stack {
         const matlabAccount = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/account');
         const matlabRegion = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/region');
         const codestarid = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/codestarid');
+        const sbProjectFolderName = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/sbprjfoldername');
 
         const cdkpipeline = new CodePipeline(this, "CdkPipeline", {
             pipelineName: 'CdkPipelinePOC',
@@ -31,7 +27,7 @@ export class CdkPipilinePocStack extends cdk.Stack {
                   connectionArn: `arn:aws:codestar-connections:${matlabRegion}:${matlabAccount}:connection/${codestarid}`
                 }
               ),
-              commands: [`cd ${props?.sbLambdaPrjFldrName}`,
+              commands: [`cd ${sbProjectFolderName}`,
                         "mvn package -DskipTests",
                         "cd ..",
                         "npm ci", 

@@ -4,6 +4,7 @@ import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as secretMgr from 'aws-cdk-lib/aws-secretsmanager';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 export class SpringbootApiLambdaStack extends cdk.Stack{
     constructor(scope: Construct, id: string, props?: cdk.StackProps){
@@ -21,10 +22,9 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         const subnet = ec2.PrivateSubnet.fromSubnetAttributes(this, "subnet", { subnetId: "subnet-c56802b2" });
 
         //getting secret from secret manager
-        const dbAccessSecretId = "lab/secretMGPOC/MySQL";
-        // const secretCompleteArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}}`;
-        const secretCompleteArn = "arn:aws:secretsmanager:us-west-2:275416279984:secret:lab/secretMGPOC/MySQL-hai33O";
-        const dbAccessSecret = secretMgr.Secret.fromSecretCompleteArn(this, 'SecretFromCompleteArn', secretCompleteArn);
+        const dbAccessSecretId = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/dbaccesssecretid');
+        const secretPartialArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}}`;
+        const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
 
         //Setup Lambda Function
         const springBootApiLambdaCdkPoc = new Function(this, "SpringBootApiLambdaCdkPoc", {
