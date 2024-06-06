@@ -17,6 +17,10 @@ export class CdkPipilinePocStack extends cdk.Stack {
  
         // The basic pipeline declaration. This sets the initial structure
         // of our pipeline
+        const matlabAccount = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/account');
+        const matlabRegion = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/region');
+        const codestarid = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/codestarid');
+
         const cdkpipeline = new CodePipeline(this, "CdkPipeline", {
             pipelineName: 'CdkPipelinePOC',
             synth: new CodeBuildStep("SynthStep", {
@@ -24,7 +28,7 @@ export class CdkPipilinePocStack extends cdk.Stack {
                 'nsalbarde/cdk-pipeline-poc',
                 "main",
                 {
-                  connectionArn: `arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props?.codeStarId}`
+                  connectionArn: `arn:aws:codestar-connections:${matlabRegion}:${matlabAccount}:connection/${codestarid}`
                 }
               ),
               commands: [`cd ${props?.sbLambdaPrjFldrName}`,
@@ -48,9 +52,6 @@ export class CdkPipilinePocStack extends cdk.Stack {
               },
             }
           });
-
-        const matlabAccount = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/account');
-        const matlabRegion = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/region');
 
         const deployMatlab = new CDKPipelinePocStage(this, 'Matlab',{
           env:{
