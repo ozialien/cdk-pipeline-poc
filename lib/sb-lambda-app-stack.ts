@@ -52,9 +52,13 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         });
 
         // Define the '/products' resource with a GET method
-        const apiResource = api.root.addResource('products');
-        apiResource.addMethod('GET');
-        apiResource.addMethod('POST');
-        apiResource.addMethod('DELETE');
+        const products = api.root.addResource('products');
+        products.addMethod('GET'); //gets all the products
+        products.addMethod('POST'); //add new product
+        products.addMethod('DELETE'); //delete all products
+
+        const product = products.addResource("{productSku}");
+        product.addMethod('GET'); //get a specific product
+        product.addMethod('DELETE'); //delete a specific product
     }
 }
