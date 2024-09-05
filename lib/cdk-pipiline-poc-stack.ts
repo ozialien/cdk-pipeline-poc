@@ -66,8 +66,8 @@ export class CdkPipilinePocStack extends cdk.Stack {
             commands: [
               'echo $ENDPOINT_URL',
               'curl -Ssf $ENDPOINT_URL/products',
-              'sleep 2m',
-              'curl -Ssf $ENDPOINT_URL/products'
+              'pwd',
+              'ls -ltra'
             ]
           })
         );
