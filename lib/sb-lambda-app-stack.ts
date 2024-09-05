@@ -7,6 +7,9 @@ import * as secretMgr from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 export class SpringbootApiLambdaStack extends cdk.Stack{
+    
+    public readonly api_endpoint_url: cdk.CfnOutput;
+
     constructor(scope: Construct, id: string, props?: cdk.StackProps){
         super(scope, id, props);
 
@@ -51,7 +54,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
             proxy: false,
         });
 
-        // Define the '/products' resource with a GET method
+        // Define the '/products' resource with a GET method (Ref: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigateway-readme.html)
         const products = api.root.addResource('products');
         products.addMethod('GET'); //gets all the products
         products.addMethod('POST'); //add new product
@@ -60,5 +63,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         const product = products.addResource("{productSku}");
         product.addMethod('GET'); //get a specific product
         product.addMethod('DELETE'); //delete a specific product
+
+        this.api_endpoint_url = new cdk.CfnOutput(this, "APIEndpointUrl", { value: api.url});
     }
 }
