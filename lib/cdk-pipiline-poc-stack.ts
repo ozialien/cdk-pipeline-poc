@@ -64,8 +64,7 @@ export class CdkPipilinePocStack extends cdk.Stack {
               ENDPOINT_URL: deployMatlab.api_endpoint_url,
             },
             commands: [
-              'curl --help',
-              'echo $ENDPOINT_URL',
+              'curl -Ssf $ENDPOINT_URL',
               'curl -Ssf $ENDPOINT_URL/products'
             ]
           })
