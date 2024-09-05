@@ -7,6 +7,9 @@ import * as secretMgr from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 export class SpringbootApiLambdaStack extends cdk.Stack{
+    
+    public readonly apiEndpointUrl: cdk.CfnOutput;
+
     constructor(scope: Construct, id: string, props?: cdk.StackProps){
         super(scope, id, props);
 
@@ -39,7 +42,8 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
             securityGroups: [securityGroup],
             environment: {
                 "datasource_secret_id": dbAccessSecretId,
-            }
+            },
+            timeout: cdk.Duration.seconds(10)
         });
 
         //grant function to read secret
@@ -49,6 +53,10 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         const api = new apigateway.LambdaRestApi(this, 'ProductCatalogSbApi', {
             handler: springBootApiLambdaCdkPoc,
             proxy: false,
+        });
+
+        this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
+            value: api.url,
         });
 
         // Define the '/products' resource with a GET method

@@ -57,6 +57,18 @@ export class CdkPipilinePocStack extends cdk.Stack {
         });
         const deployMatlabStage = cdkpipeline.addStage(deployMatlab);
 
-        deployMatlabStage.addPost(new ManualApprovalStep('approval'));
+        deployMatlabStage.addPost(
+          new CodeBuildStep('TestAPIEndpoint', {
+            projectName: 'TestAPIEndpoint',
+            envFromCfnOutputs: {
+              ENDPOINT_URL: deployMatlab.apiEndpointUrl
+            },
+            commands: [
+              'sleep 2m',
+              'curl -Ssf $ENDPOINT_URL/products'
+            ]
+          })
+        );
+        // deployMatlabStage.addPost(new ManualApprovalStep('approval'));
     }
 }
