@@ -67,7 +67,9 @@ export class CdkPipilinePocStack extends cdk.Stack {
               'echo $ENDPOINT_URL',
               'curl -Ssf $ENDPOINT_URL/products',
               'pwd',
-              'ls -ltra'
+              'ls -ltra',
+              `cd ${sbProjectFolderName}`,
+              'mvn test -Dtest=ProductCatalogUpdateSystemTest'
             ]
           })
         );
