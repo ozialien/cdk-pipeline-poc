@@ -43,7 +43,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
             environment: {
                 "datasource_secret_id": dbAccessSecretId,
             },
-            timeout: cdk.Duration.seconds(10)
+            timeout: cdk.Duration.seconds(30)
         });
 
         //grant function to read secret
