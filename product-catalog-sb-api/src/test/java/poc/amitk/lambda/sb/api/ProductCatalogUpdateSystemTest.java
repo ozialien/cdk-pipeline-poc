@@ -31,7 +31,7 @@ public class ProductCatalogUpdateSystemTest {
         }
     }
 
-    String BASE_URL = "https://k0eflygpy5.execute-api.us-west-2.amazonaws.com/prod/products";
+    String BASE_URL = "https://<api gateway id>.execute-api.us-west-2.amazonaws.com/Prod/products";
 
     @Test
     public void addProductToCatalog(){
