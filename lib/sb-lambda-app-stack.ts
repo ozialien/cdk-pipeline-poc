@@ -49,7 +49,9 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         // const version = new Version(this, 'ProductCatalogLambdaVersion', {
         //     lambda: springBootApiLambdaCdkPoc,
         //   }); 
-        const version = springBootApiLambdaCdkPoc.currentVersion;
+        // const version = springBootApiLambdaCdkPoc.currentVersion;
+        springBootApiLambdaCdkPoc.addAlias("Live");
+
 
         //grant function to read secret
         dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
