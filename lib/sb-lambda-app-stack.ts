@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { Code, Function, Runtime, SnapStartConf } from 'aws-cdk-lib/aws-lambda';
+import { Code, Function, Runtime, SnapStartConf, Version } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
@@ -45,6 +45,11 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
             },
             timeout: cdk.Duration.seconds(30)
         });
+
+        // const version = new Version(this, 'ProductCatalogLambdaVersion', {
+        //     lambda: springBootApiLambdaCdkPoc,
+        //   }); 
+        const version = springBootApiLambdaCdkPoc.currentVersion;
 
         //grant function to read secret
         dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
