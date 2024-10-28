@@ -1,0 +1,23 @@
+import { expect } from 'chai';
+import { {{classname}} } from '{{relativePath}}';
+
+describe('{{classname}} API Tests', () => {
+  let api: {{classname}};
+
+  beforeEach(() => {
+    api = new {{classname}}();
+  });
+
+  {{#operations}}
+  it('should validate {{operationId}} response', async () => {
+    const response = await api.{{operationId}}({{#if parameters}}{{parameters}}{{/if}});
+    expect(response.status).to.equal(200);
+
+    // TODO: Add custom schema validation for response
+    // Example:
+    // const isValid = validateSchema(response.data, yourSchema);
+    // expect(isValid).to.be.true;
+  });
+  {{/operations}}
+});
+
