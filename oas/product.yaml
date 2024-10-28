@@ -1,0 +1,372 @@
+openapi: 3.0.3
+info:
+  version: 1.0.0
+  title: Product catalog - OpenAPI 3.0.3
+  description: This is a sample API Specification for a fictitious product catalog management system.
+  termsOfService: 'https://www.matson.com/terms/'
+  contact:
+    name: Amit Kapoor
+    email: akapoor@matson.com
+    url: 'https://www.matson.com'
+  license:
+    name: Matson Proprietary
+    url: 'https://www.matson.com'
+tags:
+  - name: Product Catalog
+    description: Managing the product catalog
+    externalDocs:
+      description: All the amazing features about the product catalog capabilities
+      url: 'https://swagger.io'
+paths:
+  /products:
+    post:
+      summary: New product to catalog
+      description: Add a new product to the catalog
+      operationId: addProduct
+      requestBody:
+        description: The product catalog attributes should be submitted in the body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+            examples:
+              SimpleProduct:
+                summary: Creating a simple product falling in 2 categories
+                value:
+                  productName: Electric Shaver
+                  productDescription: 10k rpm rotor
+                  productCategory:
+                    - electronics
+                    - household
+                  launchDate: '2024-01-01'
+      responses:
+        '201':
+          description: Successfully added the product to catalog
+          headers:
+            Location:
+              description: The URI of the created reservedConcurrency
+              example: /Product/1059
+              schema:
+                type: string
+          content:
+            application/json:
+              schema: {}
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InvalidLaunchDate:
+                  summary: Sample response when the supplied launch date is not acceptable
+                  value:
+                    traceId: 9834pojfqwp893qoi4jfkl
+                    error:
+                      code: InvalidLaunchDate
+                      message: Catalog cannot add products with launch date more than 1 year in the future
+                InvalidInputs:
+                  summary: There are multiple input errors
+                  value:
+                    traceId: 9834pojfqwp893qoi4jfkl
+                    error:
+                      code: InvalidInputs
+                      message: Invalid product information
+                      details:
+                        - code: NullValue
+                          target: productName
+                          message: must not be null or empty
+                        - code: InvalidDate
+                          target: launchDate
+                          message: date must be valid ISO format
+      security:
+        - oauth2:
+            - catalog/update
+    get:
+      summary: Lists products from the catalog
+      description: Lists products from the catalog
+      operationId: listProducts
+      parameters:
+        - name: search
+          in: query
+          description: 'Fiql based query criteria based on the following query attributes - productCode, productName, launchDate. If none specified, the products will be be returned. Ref: https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00'
+          required: false
+          schema:
+            type: string
+          examples:
+            singleAttribute:
+              summary: simple query criteria
+              description: launchDate >= 2024-01-01
+              value: "launchDate =ge= 2024-01-01"
+            multiAttributes:
+              summary: criterial using multiple attributes
+              description: launchDate >= 2024-01-01 and productCode = 'Remington4907'
+              value: "launchDate =ge= '2024-01-01'; productCode == 'Remington4907'"
+        - name: offset
+          in: query
+          description: Skip these number of records from the head of the results. If unspecified returns the results from the beginning.
+          required: false
+          schema:
+            type: integer
+            example: 100
+        - name: limit
+          in: query
+          description: limit the number of returned records in the result. Default 100 records. Max allowed 500.
+          required: false
+          schema:
+            type: integer
+            example: 150
+        - name: sortBy
+          in: query
+          description: the attributes to sort the returned results by. Default sort by launchDate
+          required: false
+          schema:
+            type: string
+            example: productCd
+      responses:
+        '200':
+          description: successfully returned records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSearchResult'
+              examples:
+                SimpleResult:
+                  summary: Simple example
+                  value:
+                    metadata:
+                      message: Success
+                      count: 2
+                      offset: 0
+                      limit: 100
+                    data:
+                      - productId: 1009
+                        productName: Dusting Electric Shaver
+                        productDescription: product one description
+                        productCategory:
+                          - electronics
+                          - household
+                        launchDate: '2023-01-01'
+                      - productId: 1010
+                        productName: EOS Lip guard
+                        productDescription: Non-GMO/Organic
+                        productCategory:
+                          - Personal care
+                        launchDate: '2024-02-01'
+                InvalidLimit:
+                  summary: response example when client asks for an out of range limit
+                  value:
+                    metadata:
+                      message: 'limit greater than 500 not allowed, showing top 500 results only'
+                      count: 1500
+                      offset: 0
+                      limit: 500
+                    data:
+                      - productId: 1009
+                        ...: ...
+                      - ...: ...
+      security:
+        - oauth2:
+            - catalog/read
+  /token:
+    post:
+      tags:
+        - auth
+      description: 'Get a token, which will subsequently be used to invoke the service APIs'
+      operationId: getToken
+      summary: get oauth2 token
+      parameters:
+        - name: grant_type
+          in: query
+          description: The Oauth2 grant type. client_credentials is the only supported grant type
+          required: true
+          schema:
+            type: string
+            default: client_credentials
+            enum:
+              - client_credentials
+        - name: scope
+          in: query
+          description: All scopes for the resource to be accessed by the client. use space as a separator for multiple scopes
+          required: true
+          schema:
+            type: string
+        - name: client_id
+          in: query
+          description: Unique identifier for the client
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: token generation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+              examples:
+                Success:
+                  value:
+                    access_token: eyJraWQiOiJJZnM4M0IySTNhQ0hlUFJQbGJ3TzVxclhJbjhQMTdUNGFCd0RNdlNCeDdrPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI3OGtiN3Y3ZGlsc2ZwMWVsZmZ2dTNqbmVwdCIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYm9va2luZy1zZXJ2ZXJcL2VpciIsImF1dGhfdGltZSI6MTcwNjU3MjUyMCwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLnVzLXdlc3QtMi5hbWF6b25hd3MuY29tXC91cy13ZXN0LTJfSG5JSWhOUGFoIiwiZXhwIjoxNzA2NTc2MTIwLCJpYXQiOjE3MDY1NzI1MjAsInZlcnNpb24iOjIsImp0aSI6IjAwOTE1MGI4LTMzNGUtNDVkMC1iZjg1LTkwNmE1YTM5NDY2MiIsImNsaWVudF9pZCI6Ijc4a2I3djdkaWxzZnAxZWxmZnZ1M2puZXB0In0.yWuioe4CnaZwenGfgwaEm64OAIHP2gz-1FfxfmgqMWrKXtVk7HVegiPHBB95mThJs822rl7NYBm19SXtfG4M_lyAGdmX7diVxOGxWehBQlh96rcZPRUKqoAFJKI7foCh_XIddWzQY0ukme0IKYfIbu6RdXsgXa-MXf7rvyh_Gih7fVTqzcpllvDt_KAu41rVqFd2ASbFEREjFgOpURw027KIxC2SpUt9Kxq1vTrathRjYH5Ggh-sDt9ECcYPfPt5-vg3tHlJ-rLByQKiJ0s7L6_5Sae_1_C8FeVDiZM_fcqDn3LLfiexBj-E5POnvQ-5IomfyAvZ2P_UfoZlXq1ZnQ
+                    expires_in: 3600
+                    token_type: Bearer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Authentication Failed:
+                  value:
+                    traceId: afpjs-829374-askdfllnc
+                    error:
+                      code: AuthenticationFailed
+                      message: Invalid client credentials
+                    details: []
+                    timestamp: '2020-12-14T01:14:44.15Z'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InvalidScope:
+                  value:
+                    traceId: afpjs-829374-askdfllnc
+                    error:
+                      code: InvalidScope
+                      message: Either the client supplied an invalid scope or the client does not have the permission for the requested scope
+                    details: []
+                    timestamp: '2020-12-14T01:14:44.15Z'
+      security:
+        - basicAuthn: []
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int32
+          example: 1008
+        productName:
+          type: string
+          maxLength: 30
+          example: Dustin electric shaver S-500
+        productDescription:
+          type: string
+          maxLength: 100
+          example: '10k rpm, close shaver, 24 hours battery'
+        productCategory:
+          type: array
+          items:
+            type: string
+          maxItems: 3
+          example:
+            - Electronics
+        launchDate:
+          type: string
+          format: date
+          example: '2020-12-14'
+      example:
+        productId: 1095
+        productName: Electric Shaver
+        productDescription: 10k rotor
+        productCategory:
+          - electronics
+          - personal care
+    Token:
+      type: object
+      properties:
+        access_token:
+          description: The jwt formatted tokent to be used for API invocation
+          type: string
+        expires_in:
+          description: expiration of token in seconds, since it was minted
+          type: integer
+          example: 3600
+        token_type:
+          type: string
+          description: Only Bearer tokens
+          example: Bearer
+ 
+    ProductSearchResult:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            message:
+              type: string
+              example: result limited to first 500 rows only
+            resultset:
+              type: object
+              properties:
+                count:
+                  type: integer
+                  example: 500
+                offset:
+                  type: integer
+                  example: 150
+                limit:
+                  type: integer
+                  example: 150
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    ErrorResponse:
+      type: object
+      properties:
+        traceId:
+          type: string
+          example: afpjs-829374-askdfllnc
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: A short code associated with the error or a set of related errors
+              example: NullValue
+            message:
+              type: string
+              description: a description with specifics on the error encountered
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                description: A short code associated with the error or a set of related errors
+                example: invalidValue
+              target:
+                type: string
+                description: The target attribute that this error is specific to
+                example: launchDate
+              message:
+                type: string
+                description: a description with specifics on the error encountered
+                example: product launch date is too far in the future
+        timestamp:
+          type: string
+          format: date-time
+          example: '2020-12-14T01:14:44.15Z'
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: 'https://myauthorizationserver.com/token'
+          refreshUrl: ''
+          scopes:
+            catalog/update: Add or update items in the product catalog
+            catalog/read: Get details of the items in the product catalog
+    basicAuthn:
+      type: http
+      scheme: basic
+security:
+  - oauth2: []
