@@ -11,7 +11,7 @@
     "cdk": "cdk",
     "codegen:help": "openapi-generator-cli help generate",
     "codegen:lambda:server": "openapi-generator-cli generate -i oas/product.json -g spring -o codegen/server",
-    "codegen:jest:tests": "openapi-generator-cli generate -i oas/product.json -g typescript-axios --template-dir ./templates -o test",
+    "codegen:jest:tests": "ts-node ./generate-tests.ts",
     "codegen:postman:tests": "openapi-generator-cli generate -i oas/product.json -g postman-collection -o postman"
   },
   "devDependencies": {
@@ -19,11 +19,16 @@
     "@stoplight/spectral": "^6.5.0",
     "@stoplight/spectral-owasp-ruleset": "^2.0.1",
     "@types/jest": "^29.5.12",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "20.12.7",
     "ajv": "^8.17.1",
     "aws-cdk": "2.142.1",
     "chai": "^5.1.2",
+    "fs": "^0.0.1-security",
     "jest": "^29.7.0",
+    "js-yaml": "^4.1.0",
+    "path": "^0.12.7",
+    "supertest": "^7.0.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "~5.4.5"
