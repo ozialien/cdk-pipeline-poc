@@ -10,8 +10,8 @@
     "test": "jest",
     "cdk": "cdk",
     "codegen:help": "openapi-generator-cli help generate",
-    "codegen:server": "openapi-generator-cli generate -i oas/product.json -g spring -o codegen/server",
-    "codegen:tests": "openapi-generator-cli generate -i oas/product.json -g typescript-axios --template-dir ./templates -o test",
+    "codegen:lambda:server": "openapi-generator-cli generate -i oas/product.json -g spring -o codegen/server",
+    "codegen:jest:tests": "openapi-generator-cli generate -i oas/product.json -g typescript-axios --template-dir ./templates -o test",
     "codegen:postman:tests": "openapi-generator-cli generate -i oas/product.json -g postman-collection -o postman"
   },
   "devDependencies": {
