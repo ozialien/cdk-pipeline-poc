@@ -612,11 +612,6 @@ components:
           scopes:
             catalog/update: Add or update items in the product catalog
             catalog/read: Get details of the items in the product catalog
-    BearerAuth:
-        type: "http"
-        description: "RFC8725 is supported"
-        scheme: "bearer"
-        bearerFormat: "JWT"            
     basicAuthn:
       type: http
       scheme: basic
