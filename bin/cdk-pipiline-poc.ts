@@ -3,9 +3,10 @@ import * as cdk from 'aws-cdk-lib';
 import { CdkPipilinePocStack } from '../lib/cdk-pipiline-poc-stack';
 import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
 
-const EnvContext = {
+const EnvContext: cdk.StackProps = {
     env: {
-        foldername: process.env.CDK_SUBFOLDER_NAME,
+        //@ts-ignore
+        projectFolder: process.env.CDK_PROJECT_FOLDER,
         codestarid: process.env.CDK_CODESTAR_ID,
         account: process.env.CDK_DEFAULT_ACCOUNT,
         region: process.env.CDK_DEFAULT_REGION
@@ -26,11 +27,12 @@ const app = new cdk.App();
  * aws ssm put-parameter --name "/cdkpipelinepoc/matlab/sbprjfoldername" --value "your-subproject-folder-name" --type "String"
  * 
  * cdk deploy CdkSetupCodeStarParameterStack
+ * 
  **/
 new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', EnvContext);
 
-
 /**
+ * 
  * cdk deploy CdkPipilinePocStack
  * 
  */

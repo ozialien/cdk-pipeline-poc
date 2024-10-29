@@ -5,6 +5,7 @@ import { CDKPipelinePocStage } from './cdk-pipeline-poc-stage';
 import { ManualApprovalStep } from 'aws-cdk-lib/pipelines';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
+import { CdkSetupCodeStarParameterStack } from './setup-codestar-stack';
 
 export class CdkPipilinePocStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -12,10 +13,11 @@ export class CdkPipilinePocStack extends cdk.Stack {
  
         // The basic pipeline declaration. This sets the initial structure
         // of our pipeline
-        const matlabAccount = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/account');
-        const matlabRegion = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/region');
-        const codestarid = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/codestarid');
-        const sbProjectFolderName = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/sbprjfoldername');
+        const matlabAccount = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.ACCOUNT);
+        const matlabRegion = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.REGION);
+        const codestarid = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.CODESTARID);
+        const sbProjectFolderName = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.PROJECT_FOLDER);
+
 
         const cdkpipeline = new CodePipeline(this, "CdkPipeline", {
             pipelineName: 'CdkPipelinePOC',
