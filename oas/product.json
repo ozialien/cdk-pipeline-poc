@@ -257,9 +257,7 @@
             "description": "Fiql based query criteria based on the following query attributes - productCode, productName, launchDate. If none specified, the products will be be returned. Ref: https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00",
             "required": false,
             "schema": {
-              "type": "string",
-              "pattern": "^([a-zA-Z0-9]+(==|=ne=|=lt=|=le=|=gt=|=ge=)[a-zA-Z0-9]+)(;[a-zA-Z0-9]+(==|=ne=|=lt=|=le=|=gt=|=ge=)[a-zA-Z0-9]+)*$",
-              "maxLength": 255
+              "$ref": "#/components/schemas/FIQL"
             },
             "examples": {
               "singleAttribute": {
@@ -270,7 +268,7 @@
               "multiAttributes": {
                 "summary": "criterial using multiple attributes",
                 "description": "launchDate >= 2024-01-01 and productCode = 'Remington4907'",
-                "value": "launchDate=ge='2024-01-01';productCode=='Remington4907'"
+                "value": "launchDate=ge=2024-01-01;productCode==Remington4907"
               }
             }
           },
@@ -306,10 +304,7 @@
             "description": "the attributes to sort the returned results by. Default sort by launchDate",
             "required": false,
             "schema": {
-              "type": "string",
-              "maxLength": 255,
-              "pattern": "^([+-][a-zA-Z0-9]+)(,[+-][a-zA-Z0-9]+)*$",
-              "example": "productCd"
+              "$ref": "#/components/schemas/Sort"
             }
           }
         ],
@@ -767,6 +762,18 @@
       }
     },
     "schemas": {
+      "Sort": {
+        "type": "string",
+        "maxLength": 255,
+        "pattern": "^([+-][a-zA-Z0-9]+)(,[+-][a-zA-Z0-9]+)*$",
+        "example": "+productCd"
+      },
+      "FIQL": {
+        "type": "string",
+        "pattern": "^([a-zA-Z0-9]+(==|=ne=|=lt=|=le=|=gt=|=ge=)(\\d{4}-\\d{2}-\\d{2}|'\\d{4}-\\d{2}-\\d{2}'|'[a-zA-Z0-9]+'|[a-zA-Z0-9]+))(;[a-zA-Z0-9]+(==|=ne=|=lt=|=le=|=gt=|=ge=)(\\d{4}-\\d{2}-\\d{2}|'\\d{4}-\\d{2}-\\d{2}'|'[a-zA-Z0-9]+'|[a-zA-Z0-9]+))*$",
+        "maxLength": 255,
+        "example": "launchDate=ge=2024-01-01;productCode==Remington4907"
+      },
       "Product": {
         "type": "object",
         "properties": {
