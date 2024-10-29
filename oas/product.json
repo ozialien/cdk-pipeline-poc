@@ -252,24 +252,25 @@
         "operationId": "listProducts",
         "parameters": [
           {
-            "name": "search",
+            "name": "filter",
             "in": "query",
             "description": "Fiql based query criteria based on the following query attributes - productCode, productName, launchDate. If none specified, the products will be be returned. Ref: https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00",
             "required": false,
             "schema": {
               "type": "string",
+              "pattern": "^([a-zA-Z0-9]+(==|=ne=|=lt=|=le=|=gt=|=ge=)[a-zA-Z0-9]+)(;[a-zA-Z0-9]+(==|=ne=|=lt=|=le=|=gt=|=ge=)[a-zA-Z0-9]+)*$",
               "maxLength": 255
             },
             "examples": {
               "singleAttribute": {
                 "summary": "simple query criteria",
                 "description": "launchDate >= 2024-01-01",
-                "value": "launchDate =ge= 2024-01-01"
+                "value": "launchDate=ge=2024-01-01"
               },
               "multiAttributes": {
                 "summary": "criterial using multiple attributes",
                 "description": "launchDate >= 2024-01-01 and productCode = 'Remington4907'",
-                "value": "launchDate =ge= '2024-01-01'; productCode == 'Remington4907'"
+                "value": "launchDate=ge='2024-01-01';productCode=='Remington4907'"
               }
             }
           },
@@ -300,13 +301,14 @@
             }
           },
           {
-            "name": "sortBy",
+            "name": "sort",
             "in": "query",
             "description": "the attributes to sort the returned results by. Default sort by launchDate",
             "required": false,
             "schema": {
               "type": "string",
               "maxLength": 255,
+              "pattern": "^([+-][a-zA-Z0-9]+)(,[+-][a-zA-Z0-9]+)*$",
               "example": "productCd"
             }
           }
@@ -703,8 +705,18 @@
         "description": "The URI of the created reservedConcurrency",
         "example": "/Product/1059",
         "schema": {
-          "type": "string",
-          "format": "uri",
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 255,
+              "format": "uri"
+            },
+            {
+              "type": "string",
+              "maxLength": 255,
+              "pattern": "^/[^ ]*$"
+            }
+          ],
           "maxLength": 255
         }
       },
