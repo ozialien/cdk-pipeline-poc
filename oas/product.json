@@ -87,7 +87,60 @@
         "operationId": "listProducts",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProductFilter"
+            "in": "query",
+            "name": "offset",
+            "description": "Skip these number of records from the head of the results. If unspecified returns the results from the beginning.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 92233720336854780000,
+              "example": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "limit the number of returned records in the result. Default 100 records. Max allowed 500.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 2147483647,
+              "example": 150
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "the attributes to sort the returned results by. Default sort by launchDate",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Sort"
+            }
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "description": "Fiql based query criteria based on the following query attributes - productCode, productName, launchDate. If none specified, the products will be be returned. Ref: https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/FIQL"
+            },
+            "examples": {
+              "singleAttribute": {
+                "summary": "simple query criteria",
+                "description": "launchDate >= 2024-01-01",
+                "value": "launchDate=ge=2024-01-01"
+              },
+              "multiAttributes": {
+                "summary": "criterial using multiple attributes",
+                "description": "launchDate >= 2024-01-01 and productCode = 'Remington4907'",
+                "value": "launchDate=ge=2024-01-01;productCode==Remington4907"
+              }
+            }
           }
         ],
         "responses": {
@@ -167,6 +220,9 @@
         "responses": {
           "200": {
             "$ref": "#/components/responses/TokenAuthSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/TokenAuthUnauthorized"
@@ -258,8 +314,8 @@
     },
     "parameters": {
       "PagingOffset": {
-        "name": "offset",
         "in": "query",
+        "name": "offset",
         "description": "Skip these number of records from the head of the results. If unspecified returns the results from the beginning.",
         "required": false,
         "schema": {
@@ -271,8 +327,8 @@
         }
       },
       "PagingLimit": {
-        "name": "limit",
         "in": "query",
+        "name": "limit",
         "description": "limit the number of returned records in the result. Default 100 records. Max allowed 500.",
         "required": false,
         "schema": {
@@ -284,8 +340,8 @@
         }
       },
       "Sort": {
-        "name": "sort",
         "in": "query",
+        "name": "sort",
         "description": "the attributes to sort the returned results by. Default sort by launchDate",
         "required": false,
         "schema": {
@@ -293,8 +349,8 @@
         }
       },
       "ProductFilter": {
-        "name": "filter",
         "in": "query",
+        "name": "filter",
         "description": "Fiql based query criteria based on the following query attributes - productCode, productName, launchDate. If none specified, the products will be be returned. Ref: https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00",
         "required": false,
         "schema": {
