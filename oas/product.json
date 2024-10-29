@@ -72,12 +72,7 @@
             "description": "Successfully added the product to catalog",
             "headers": {
               "Location": {
-                "description": "The URI of the created reservedConcurrency",
-                "example": "/Product/1059",
-                "schema": {
-                  "type": "string",
-                  "maxLength": 255
-                }
+                "$ref": "#/components/headers/Location"
               },
               "Access-Control-Allow-Origin": {
                 "$ref": "#/components/headers/Access-Control-Allow-Origin"
@@ -690,6 +685,15 @@
   },
   "components": {
     "headers": {
+      "Location": {
+        "description": "The URI of the created reservedConcurrency",
+        "example": "/Product/1059",
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 255
+        }
+      },
       "Retry-After": {
         "description": "Indicates how long the client should wait before making a follow-up request.",
         "schema": {
