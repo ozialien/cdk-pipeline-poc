@@ -43,29 +43,7 @@
         "description": "Add a new product to the catalog",
         "operationId": "addProduct",
         "requestBody": {
-          "description": "The product catalog attributes should be submitted in the body",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Product"
-              },
-              "examples": {
-                "SimpleProduct": {
-                  "summary": "Creating a simple product falling in 2 categories",
-                  "value": {
-                    "productName": "Electric Shaver",
-                    "productDescription": "10k rpm rotor",
-                    "productCategory": [
-                      "electronics",
-                      "household"
-                    ],
-                    "launchDate": "2024-01-01"
-                  }
-                }
-              }
-            }
-          }
+          "$ref": "#/components/requestBodies/ProductBody"
         },
         "responses": {
           "201": {
@@ -109,140 +87,12 @@
         "operationId": "listProducts",
         "parameters": [
           {
-            "name": "filter",
-            "in": "query",
-            "description": "Fiql based query criteria based on the following query attributes - productCode, productName, launchDate. If none specified, the products will be be returned. Ref: https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00",
-            "required": false,
-            "schema": {
-              "$ref": "#/components/schemas/FIQL"
-            },
-            "examples": {
-              "singleAttribute": {
-                "summary": "simple query criteria",
-                "description": "launchDate >= 2024-01-01",
-                "value": "launchDate=ge=2024-01-01"
-              },
-              "multiAttributes": {
-                "summary": "criterial using multiple attributes",
-                "description": "launchDate >= 2024-01-01 and productCode = 'Remington4907'",
-                "value": "launchDate=ge=2024-01-01;productCode==Remington4907"
-              }
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "description": "Skip these number of records from the head of the results. If unspecified returns the results from the beginning.",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int64",
-              "minimum": 1,
-              "maximum": 92233720336854780000,
-              "example": 100
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "limit the number of returned records in the result. Default 100 records. Max allowed 500.",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 1,
-              "maximum": 2147483647,
-              "example": 150
-            }
-          },
-          {
-            "name": "sort",
-            "in": "query",
-            "description": "the attributes to sort the returned results by. Default sort by launchDate",
-            "required": false,
-            "schema": {
-              "$ref": "#/components/schemas/Sort"
-            }
+            "$ref": "#/components/parameters/ProductFilter"
           }
         ],
         "responses": {
           "200": {
-            "description": "successfully returned records",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "$ref": "#/components/headers/Access-Control-Allow-Origin"
-              },
-              "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
-              },
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSearchResult"
-                },
-                "examples": {
-                  "SimpleResult": {
-                    "summary": "Simple example",
-                    "value": {
-                      "metadata": {
-                        "message": "Success",
-                        "count": 2,
-                        "offset": 0,
-                        "limit": 100
-                      },
-                      "data": [
-                        {
-                          "productId": 1009,
-                          "productName": "Dusting Electric Shaver",
-                          "productDescription": "product one description",
-                          "productCategory": [
-                            "electronics",
-                            "household"
-                          ],
-                          "launchDate": "2023-01-01"
-                        },
-                        {
-                          "productId": 1010,
-                          "productName": "EOS Lip guard",
-                          "productDescription": "Non-GMO/Organic",
-                          "productCategory": [
-                            "Personal care"
-                          ],
-                          "launchDate": "2024-02-01"
-                        }
-                      ]
-                    }
-                  },
-                  "InvalidLimit": {
-                    "summary": "response example when client asks for an out of range limit",
-                    "value": {
-                      "metadata": {
-                        "message": "limit greater than 500 not allowed, showing top 500 results only",
-                        "count": 1500,
-                        "offset": 0,
-                        "limit": 500
-                      },
-                      "data": [
-                        {
-                          "productId": 1009,
-                          "...": "..."
-                        },
-                        {
-                          "...": "..."
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/SuccessfullProductResults"
           },
           "401": {
             "$ref": "#/components/responses/UnAuthorized"
@@ -316,165 +166,19 @@
         ],
         "responses": {
           "200": {
-            "description": "token generation successful",
-            "headers": {
-              "Retry-After": {
-                "$ref": "#/components/headers/Retry-After"
-              },
-              "Access-Control-Allow-Origin": {
-                "$ref": "#/components/headers/Access-Control-Allow-Origin"
-              },
-              "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
-              },
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Token"
-                },
-                "examples": {
-                  "Success": {
-                    "value": {
-                      "access_token": "eyJraWQiOiJJZnM4M0IySTNhQ0hlUFJQbGJ3TzVxclhJbjhQMTdUNGFCd0RNdlNCeDdrPSIsImFsZyI6IlJTMjU2In",
-                      "expires_in": 3600,
-                      "token_type": "Bearer"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/TokenAuthSuccess"
           },
           "401": {
-            "description": "Unauthorized",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "$ref": "#/components/headers/Access-Control-Allow-Origin"
-              },
-              "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
-              },
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "Authentication Failed": {
-                    "value": {
-                      "traceId": "afpjs-829374-askdfllnc",
-                      "error": {
-                        "code": "AuthenticationFailed",
-                        "message": "Invalid client credentials"
-                      },
-                      "details": [],
-                      "timestamp": "2020-12-14T01:14:44.15Z"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/TokenAuthUnauthorized"
           },
           "403": {
-            "description": "Forbidden",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "$ref": "#/components/headers/Access-Control-Allow-Origin"
-              },
-              "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
-              },
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "InvalidScope": {
-                    "value": {
-                      "traceId": "afpjs-829374-askdfllnc",
-                      "error": {
-                        "code": "InvalidScope",
-                        "message": "Either the client supplied an invalid scope or the client does not have the permission for the requested scope"
-                      },
-                      "details": [],
-                      "timestamp": "2020-12-14T01:14:44.15Z"
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/responses/TokenAuthForbidden"
           },
           "429": {
-            "description": "Too Many Requests",
-            "headers": {
-              "Retry-After": {
-                "$ref": "#/components/headers/Retry-After"
-              },
-              "Access-Control-Allow-Origin": {
-                "$ref": "#/components/headers/Access-Control-Allow-Origin"
-              },
-              "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
-              },
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
+            "$ref": "#/components/responses/TooManyRequests"
           },
           "500": {
-            "description": "Internal Server Error",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "$ref": "#/components/headers/Access-Control-Allow-Origin"
-              },
-              "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
-              },
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
+            "$ref": "#/components/responses/InternalServerError"
           }
         },
         "security": [
@@ -552,7 +256,280 @@
         }
       }
     },
+    "parameters": {
+      "PagingOffset": {
+        "name": "offset",
+        "in": "query",
+        "description": "Skip these number of records from the head of the results. If unspecified returns the results from the beginning.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1,
+          "maximum": 92233720336854780000,
+          "example": 100
+        }
+      },
+      "PagingLimit": {
+        "name": "limit",
+        "in": "query",
+        "description": "limit the number of returned records in the result. Default 100 records. Max allowed 500.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "example": 150
+        }
+      },
+      "Sort": {
+        "name": "sort",
+        "in": "query",
+        "description": "the attributes to sort the returned results by. Default sort by launchDate",
+        "required": false,
+        "schema": {
+          "$ref": "#/components/schemas/Sort"
+        }
+      },
+      "ProductFilter": {
+        "name": "filter",
+        "in": "query",
+        "description": "Fiql based query criteria based on the following query attributes - productCode, productName, launchDate. If none specified, the products will be be returned. Ref: https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00",
+        "required": false,
+        "schema": {
+          "$ref": "#/components/schemas/FIQL"
+        },
+        "examples": {
+          "singleAttribute": {
+            "summary": "simple query criteria",
+            "description": "launchDate >= 2024-01-01",
+            "value": "launchDate=ge=2024-01-01"
+          },
+          "multiAttributes": {
+            "summary": "criterial using multiple attributes",
+            "description": "launchDate >= 2024-01-01 and productCode = 'Remington4907'",
+            "value": "launchDate=ge=2024-01-01;productCode==Remington4907"
+          }
+        }
+      }
+    },
+    "requestBodies": {
+      "ProductBody": {
+        "description": "The product catalog attributes should be submitted in the body",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Product"
+            },
+            "examples": {
+              "SimpleProduct": {
+                "summary": "Creating a simple product falling in 2 categories",
+                "value": {
+                  "productName": "Electric Shaver",
+                  "productDescription": "10k rpm rotor",
+                  "productCategory": [
+                    "electronics",
+                    "household"
+                  ],
+                  "launchDate": "2024-01-01"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "responses": {
+      "TokenAuthSuccess": {
+        "description": "token generation successful",
+        "headers": {
+          "Retry-After": {
+            "$ref": "#/components/headers/Retry-After"
+          },
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/Access-Control-Allow-Origin"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Token"
+            },
+            "examples": {
+              "Success": {
+                "value": {
+                  "access_token": "eyJraWQiOiJJZnM4M0IySTNhQ0hlUFJQbGJ3TzVxclhJbjhQMTdUNGFCd0RNdlNCeDdrPSIsImFsZyI6IlJTMjU2In",
+                  "expires_in": 3600,
+                  "token_type": "Bearer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "TokenAuthUnauthorized": {
+        "description": "Unauthorized",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/Access-Control-Allow-Origin"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "traceId": "afpjs-829374-askdfllnc",
+                  "error": {
+                    "code": "AuthenticationFailed",
+                    "message": "Invalid client credentials"
+                  },
+                  "details": [],
+                  "timestamp": "2020-12-14T01:14:44.15Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "TokenAuthForbidden": {
+        "description": "Forbidden",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/Access-Control-Allow-Origin"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "InvalidScope": {
+                "value": {
+                  "traceId": "afpjs-829374-askdfllnc",
+                  "error": {
+                    "code": "InvalidScope"
+                  },
+                  "message": "Either the client supplied an invalid scope or the client does not have the permission for the requested scope",
+                  "details": [],
+                  "timestamp": "2020-12-14T01:14:44.15Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "SuccessfullProductResults": {
+        "description": "successfully returned records",
+        "headers": {
+          "Access-Control-Allow-Origin": {
+            "$ref": "#/components/headers/Access-Control-Allow-Origin"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProductSearchResult"
+            },
+            "examples": {
+              "SimpleResult": {
+                "summary": "Simple example",
+                "value": {
+                  "metadata": {
+                    "message": "Success",
+                    "count": 2,
+                    "offset": 0,
+                    "limit": 100
+                  },
+                  "data": [
+                    {
+                      "productId": 1009,
+                      "productName": "Dusting Electric Shaver",
+                      "productDescription": "product one description",
+                      "productCategory": [
+                        "electronics",
+                        "household"
+                      ],
+                      "launchDate": "2023-01-01"
+                    },
+                    {
+                      "productId": 1010,
+                      "productName": "EOS Lip guard",
+                      "productDescription": "Non-GMO/Organic",
+                      "productCategory": [
+                        "Personal care"
+                      ],
+                      "launchDate": "2024-02-01"
+                    }
+                  ]
+                }
+              },
+              "InvalidLimit": {
+                "summary": "response example when client asks for an out of range limit",
+                "value": {
+                  "metadata": {
+                    "message": "limit greater than 500 not allowed, showing top 500 results only",
+                    "count": 1500,
+                    "offset": 0,
+                    "limit": 500
+                  },
+                  "data": [
+                    {
+                      "productId": 1009,
+                      "...": "..."
+                    },
+                    {
+                      "...": "..."
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
       "SuccessfullyCreated": {
         "description": "Successfully added the product to catalog",
         "headers": {
