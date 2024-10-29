@@ -17,17 +17,28 @@
   },
   "tags": [
     {
-      "name": "Product Catalog",
+      "name": "ProductCatalog",
       "description": "Managing the product catalog",
       "externalDocs": {
         "description": "All the amazing features about the product catalog capabilities",
         "url": "https://swagger.io"
+      }
+    },
+    {
+      "name": "TokenAuth",
+      "description": "OATH2 Token Auth",
+      "externalDocs": {
+        "description": "OAuth Token Auth",
+        "url": "https://swagger.io/docs/specification/v3_0/authentication/oauth2/"
       }
     }
   ],
   "paths": {
     "/products": {
       "post": {
+        "tags": [
+          "ProductCatalog"
+        ],
         "summary": "New product to catalog",
         "description": "Add a new product to the catalog",
         "operationId": "addProduct",
@@ -212,9 +223,6 @@
             "ApiKeyAuth": []
           },
           {
-            "BearerAuth": []
-          },
-          {
             "ProductTokenAuth": [
               "catalog/read"
             ]
@@ -227,6 +235,9 @@
         ]
       },
       "get": {
+        "tags": [
+          "ProductCatalog"
+        ],
         "summary": "Lists products from the catalog",
         "description": "Lists products from the catalog",
         "operationId": "listProducts",
@@ -451,9 +462,6 @@
             "ApiKeyAuth": []
           },
           {
-            "BearerAuth": []
-          },
-          {
             "ProductTokenAuth": [
               "catalog/read"
             ]
@@ -469,7 +477,7 @@
     "/token": {
       "post": {
         "tags": [
-          "auth"
+          "TokenAuth"
         ],
         "description": "Get a token, which will subsequently be used to invoke the service APIs",
         "operationId": "getToken",
@@ -938,12 +946,6 @@
           }
         }
       },
-      "BearerAuth": {
-        "type": "http",
-        "description": "RFC8725 is supported",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      },
       "ApiKeyAuth": {
         "type": "apiKey",
         "name": "X-API-KEY",
@@ -954,9 +956,6 @@
   "security": [
     {
       "ApiKeyAuth": []
-    },
-    {
-      "BearerAuth": []
     },
     {
       "ProductTokenAuth": []
