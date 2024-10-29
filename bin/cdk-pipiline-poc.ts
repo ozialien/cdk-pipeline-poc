@@ -29,14 +29,17 @@ const app = new cdk.App();
  * cdk deploy CdkSetupCodeStarParameterStack
  * 
  **/
-new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', EnvContext);
+export const init = new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', EnvContext);
 
 /**
  * 
  * cdk deploy CdkPipilinePocStack
  * 
  */
-new CdkPipilinePocStack(app, 'CdkPipilinePocStack', EnvContext);
+export const deploy = new CdkPipilinePocStack(app, 'CdkPipilinePocStack', EnvContext);
+
+
+export default deploy;
 
 
 
