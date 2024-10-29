@@ -166,6 +166,13 @@
               "X-RateLimit-Reset": {
                 "$ref": "#/components/headers/X-RateLimit-Reset"
               }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
             }
           },
           "429": {
@@ -185,6 +192,13 @@
               },
               "X-RateLimit-Reset": {
                 "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
