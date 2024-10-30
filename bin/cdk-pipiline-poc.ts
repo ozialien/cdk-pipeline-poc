@@ -21,7 +21,8 @@ export interface LambdaProps {
     readonly code?: lambda.AssetCode,
     readonly handler?: string,
     readonly java?: LambdaJavaProps,
-    readonly memory?: number
+    readonly memory?: number,
+    readonly xrayEnabled?: boolean,
 }
 export interface ApiGatewayProps {
     readonly name?: string
@@ -44,7 +45,7 @@ export const EnvContext: MatsonEnvironment = {
         pipelineName: CdkSetupCodeStarParameterStack.ENV_PIPELINE_NAME,
         projectFolder: process.env.CDK_PROJECT_FOLDER ? process.env.CDK_PROJECT_FOLDER : 'product-catalog-sb-api',
         codestarid: process.env.CDK_CODESTAR_ID ? process.env.CDK_CODESTAR_ID : 'a96e8694-d581-49b7-a402-7eb4aa97fe00',
-    },
+    },    
     apiGateway: {
         name: 'ProductCatalogSbApi'
     },
@@ -56,7 +57,8 @@ export const EnvContext: MatsonEnvironment = {
         java: {
             'version': lambda.Runtime.JAVA_21
         },
-        memory: 2048
+        memory: 2048,
+        xrayEnabled: true        
     }
 };
 console.log(EnvContext);
@@ -75,17 +77,11 @@ const app = new cdk.App();
  * cdk deploy CdkSetupCodeStarParameterStack
  * 
  **/
-export const init = new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', {env: EnvContext});
+new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', {env: EnvContext});
 
 /**
  * 
  * cdk deploy CdkPipilinePocStack
  * 
  */
-export const deploy = new CdkPipilinePocStack(app, 'CdkPipilinePocStack', {env: EnvContext});
-
-
-export default deploy;
-
-
-
+new CdkPipilinePocStack(app, 'CdkPipilinePocStack', {env: EnvContext});
