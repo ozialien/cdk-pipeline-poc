@@ -2,8 +2,9 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import { XRayTracingBaseStack } from './enable-xray-tracing-stack';
 
-export class XRayTracingDisabledStack extends cdk.Stack {
+export class XRayTracingDisabledStack extends XRayTracingBaseStack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 

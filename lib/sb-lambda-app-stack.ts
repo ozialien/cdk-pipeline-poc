@@ -5,8 +5,9 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as secretMgr from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import { XRayTracingBaseStack } from './enable-xray-tracing-stack';
 
-export class SpringbootApiLambdaStack extends cdk.Stack{
+export class SpringbootApiLambdaStack extends XRayTracingBaseStack {
     
     public readonly apiEndpointUrl: cdk.CfnOutput;
 
@@ -30,12 +31,12 @@ export class SpringbootApiLambdaStack extends cdk.Stack{
         const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
 
         //Setup Lambda Function
-        const springBootApiLambdaCdkPoc = new Function(this, "SpringBootApiLambdaCdkPoc", {
-            functionName: "ProductCatalogSbApiLambda",
-            runtime: Runtime.JAVA_21,
-            memorySize: 2048,
-            code: Code.fromAsset("product-catalog-sb-api/target/product-catalog-sb-api-0.0.1-SNAPSHOT.jar"),
-            handler: "poc.amitk.lambda.sb.api.infra.StreamLambdaHandler::handleRequest",
+        const springBootApiLambdaCdkPoc = new Function(this, this.lambdaId, {
+            functionName: this.lambdaName,
+            runtime: this.lambdaRuntime,
+            memorySize: this.lambdaMemory,
+            code: this.lambdaCode,
+            handler: this.lambdaHandler,
             snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
             vpc: vpc,
             vpcSubnets: { subnets:[subnet] },

@@ -2,19 +2,61 @@
 import * as cdk from 'aws-cdk-lib';
 import { CdkPipilinePocStack } from '../lib/cdk-pipiline-poc-stack';
 import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 
-const EnvContext: cdk.StackProps = {
+export interface CDKProps {
+    readonly timeout?: cdk.Duration,
+    readonly userInitials?: string,
+    readonly pipelineName?: string,
+    readonly projectFolder?: string,
+    readonly codestarid?: string
+}
+export interface LambdaJavaProps {
+    readonly version?: lambda.Runtime
+}
+
+export interface LambdaProps {
+    readonly name?: string,
+    readonly code?: lambda.AssetCode,
+    readonly handler?: string,
+    readonly java?: LambdaJavaProps,
+    readonly memory?: number
+}
+export interface ApiGatewayProps {
+    readonly name?: string
+}
+
+export interface ExtraStackProps {    
+        readonly cdk?: CDKProps,
+        readonly lambda?: LambdaProps,
+        readonly apiGateway?: ApiGatewayProps
+}
+
+export interface MatsonStackProps extends cdk.StackProps, ExtraStackProps {}
+
+const EnvContext: MatsonStackProps = {
     env: {
         account: process.env.CDK_DEFAULT_ACCOUNT,
-        region: process.env.CDK_DEFAULT_REGION,
-        //@ts-ignore
+        region: process.env.CDK_DEFAULT_REGION
+    },
+    cdk: {
+        timeout: cdk.Duration.seconds(30),
         userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,
-        //@ts-ignore
         pipelineName: CdkSetupCodeStarParameterStack.ENV_PIPELINE_NAME,
-         //@ts-ignore
         projectFolder: process.env.CDK_PROJECT_FOLDER,
-         //@ts-ignore
-        codestarid: process.env.CDK_CODESTAR_ID   
+        codestarid: process.env.CDK_CODESTAR_ID,
+    },
+    apiGateway: {
+        name: ''
+    },
+    lambda: {
+        name: 'ProductCatalogSbApiLambda',
+        code: lambda.Code.fromAsset("product-catalog-sb-api/target/product-catalog-sb-api-0.0.1-SNAPSHOT.jar"),
+        handler: "poc.amitk.lambda.sb.api.infra.StreamLambdaHandler::handleRequest",
+        java: {
+            'version': lambda.Runtime.JAVA_21
+        },
+        memory: 2048
     }
 };
 
