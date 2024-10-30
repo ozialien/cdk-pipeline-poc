@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
-import { MatsonStackProps } from '../bin/cdk-pipiline-poc';
+import { MatsonEnvironment } from '../bin/cdk-pipiline-poc';
 
 
 export class XRayTracingBaseStack extends cdk.Stack {
@@ -16,41 +16,44 @@ export class XRayTracingBaseStack extends cdk.Stack {
   public cdkTimeout: cdk.Duration = cdk.Duration.seconds(30);
   public apiGatewayName: string = '';
 
-  constructor(scope: Construct, id: string, props?: MatsonStackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps & {env: MatsonEnvironment}) {
     super(scope, id, props);
+    console.log("Processing Custom Properties");
     if (props) {     
-        if (props.lambda) {
-          if (props.lambda.name) {
-            this.lambdaName = props.lambda.name;
+        if (props.env.lambda) {
+          if (props.env.lambda.name) {
+            this.lambdaName = props.env.lambda.name;
           }
-          if (props.lambda.id) {
-            this.lambdaId = props.lambda.id;
+          console.log(props);
+          if (props.env.lambda.id) {
+            this.lambdaId = props.env.lambda.id;
           }
-          if (props.lambda.handler) {
-            this.lambdaHandler = props.lambda.handler;
+          if (props.env.lambda.handler) {
+            this.lambdaHandler = props.env.lambda.handler;
           }
-          if (props.lambda.java) {
-            if (props.lambda.java.version) {
-              this.lambdaRuntime = props.lambda.java.version;
+          if (props.env.lambda.java) {
+            if (props.env.lambda.java.version) {
+              this.lambdaRuntime = props.env.lambda.java.version;
             }
           }
-          if (props.lambda.code) {
-            this.lambdaCode = props.lambda.code;
+          if (props.env.lambda.code) {
+            this.lambdaCode = props.env.lambda.code;
           }
-          if (props.lambda.memory) {
-            this.lambdaMemory = props.lambda.memory;
+          if (props.env.lambda.memory) {
+            this.lambdaMemory = props.env.lambda.memory;
           }
-          if (props.cdk) {
-            if (props.cdk.timeout) {
-              this.cdkTimeout = props.cdk.timeout;
+          if (props.env.cdk) {
+            if (props.env.cdk.timeout) {
+              this.cdkTimeout = props.env.cdk.timeout;
             }
           }
-          if (props.apiGateway) {
-            if (props.apiGateway.name) {
-              this.apiGatewayName = props.apiGateway.name;
+          if (props.env.apiGateway) {
+            if (props.env.apiGateway.name) {
+              this.apiGatewayName = props.env.apiGateway.name;
             }
           }        
       }
+      console.log("Done", props);
     }
   }
 }
@@ -59,7 +62,7 @@ export class XRayTracingStack extends XRayTracingBaseStack {
 
 
 
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps & {env: MatsonEnvironment}) {
     super(scope, id, props);
 
     // Define the Lambda function for the Spring Boot app with X-Ray tracing enabled

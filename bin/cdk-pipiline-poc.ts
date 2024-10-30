@@ -16,6 +16,7 @@ export interface LambdaJavaProps {
 }
 
 export interface LambdaProps {
+    readonly id?: string,
     readonly name?: string,
     readonly code?: lambda.AssetCode,
     readonly handler?: string,
@@ -26,19 +27,17 @@ export interface ApiGatewayProps {
     readonly name?: string
 }
 
-export interface ExtraStackProps {    
-        readonly cdk?: CDKProps,
-        readonly lambda?: LambdaProps,
-        readonly apiGateway?: ApiGatewayProps
+export interface ExtraStackProps {
+    readonly cdk?: CDKProps,
+    readonly lambda?: LambdaProps,
+    readonly apiGateway?: ApiGatewayProps
 }
 
-export interface MatsonStackProps extends cdk.StackProps, ExtraStackProps {}
+export interface MatsonEnvironment extends cdk.Environment, ExtraStackProps { }
 
-const EnvContext: MatsonStackProps = {
-    env: {
-        account: process.env.CDK_DEFAULT_ACCOUNT,
-        region: process.env.CDK_DEFAULT_REGION
-    },
+const EnvContext: MatsonEnvironment = {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
     cdk: {
         timeout: cdk.Duration.seconds(30),
         userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,
@@ -50,6 +49,7 @@ const EnvContext: MatsonStackProps = {
         name: ''
     },
     lambda: {
+        id: 'SpringBootApiLambdaCdkPoc',
         name: 'ProductCatalogSbApiLambda',
         code: lambda.Code.fromAsset("product-catalog-sb-api/target/product-catalog-sb-api-0.0.1-SNAPSHOT.jar"),
         handler: "poc.amitk.lambda.sb.api.infra.StreamLambdaHandler::handleRequest",
@@ -75,14 +75,14 @@ const app = new cdk.App();
  * cdk deploy CdkSetupCodeStarParameterStack
  * 
  **/
-export const init = new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', EnvContext);
+export const init = new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', {env: EnvContext});
 
 /**
  * 
  * cdk deploy CdkPipilinePocStack
  * 
  */
-export const deploy = new CdkPipilinePocStack(app, 'CdkPipilinePocStack', EnvContext);
+export const deploy = new CdkPipilinePocStack(app, 'CdkPipilinePocStack', {env: EnvContext});
 
 
 export default deploy;

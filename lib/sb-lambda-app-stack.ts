@@ -6,12 +6,13 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as secretMgr from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { XRayTracingBaseStack } from './enable-xray-tracing-stack';
+import { MatsonEnvironment } from '../bin/cdk-pipiline-poc';
 
 export class SpringbootApiLambdaStack extends XRayTracingBaseStack {
     
     public readonly apiEndpointUrl: cdk.CfnOutput;
 
-    constructor(scope: Construct, id: string, props?: cdk.StackProps){
+    constructor(scope: Construct, id: string, props?: cdk.StackProps & {env: MatsonEnvironment}){
         super(scope, id, props);
 
         //getting vpc for lambda
