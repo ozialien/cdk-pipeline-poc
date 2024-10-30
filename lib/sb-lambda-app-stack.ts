@@ -10,66 +10,12 @@ import { MatsonEnvironment } from '../bin/cdk-pipiline-poc';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 
 
-
-
-export class MatsonBaseStack extends cdk.Stack {
-    public lambdaName: string = '';
-    public lambdaId: string = '';
-    public lambdaHandler: string = '';
-    public lambdaRuntime: lambda.Runtime = lambda.Runtime.JAVA_21;
-    public lambdaCode: lambda.AssetCode;
-    public lambdaMemory: number = 1024;
-    public cdkTimeout: cdk.Duration = cdk.Duration.seconds(30);
-    public apiGatewayName: string = '';
-
-    constructor(scope: Construct, id: string, props?: cdk.StackProps & { env: MatsonEnvironment }) {
-        super(scope, id, props as cdk.StackProps);
-        console.log("Processing Custom Properties");
-        if (props) {
-            if (props.env.lambda) {
-                if (props.env.lambda.name) {
-                    this.lambdaName = props.env.lambda.name;
-                }
-                if (props.env.lambda.id) {
-                    this.lambdaId = props.env.lambda.id;
-                }
-                if (props.env.lambda.handler) {
-                    this.lambdaHandler = props.env.lambda.handler;
-                }
-                if (props.env.lambda.java) {
-                    if (props.env.lambda.java.version) {
-                        this.lambdaRuntime = props.env.lambda.java.version;
-                    }
-                }
-                if (props.env.lambda.code) {
-                    this.lambdaCode = props.env.lambda.code;
-                }
-                if (props.env.lambda.memory) {
-                    this.lambdaMemory = props.env.lambda.memory;
-                }
-                if (props.env.cdk) {
-                    if (props.env.cdk.timeout) {
-                        this.cdkTimeout = props.env.cdk.timeout;
-                    }
-                }
-                if (props.env.apiGateway) {
-                    if (props.env.apiGateway.name) {
-                        this.apiGatewayName = props.env.apiGateway.name;
-                    }
-                }
-            }
-            console.log("Done", props);
-        }
-    }
-}
-
-
-export class SpringbootApiLambdaStack extends MatsonBaseStack {
+export class SpringbootApiLambdaStack extends cdk.Stack {
 
     public readonly apiEndpointUrl: cdk.CfnOutput;
 
     constructor(scope: Construct, id: string, props?: cdk.StackProps & { env: MatsonEnvironment }) {
-        super(scope, id, props);
+        super(scope, id, props as cdk.StackProps);
 
         //getting vpc for lambda
         const vpc = ec2.Vpc.fromLookup(this, 'VPC', {
@@ -87,12 +33,12 @@ export class SpringbootApiLambdaStack extends MatsonBaseStack {
         const secretPartialArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}`;
         const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
 
-        let lambdaInformation = {
-            functionName: this.lambdaName,
-            runtime: this.lambdaRuntime,
-            memorySize: this.lambdaMemory,
-            code: this.lambdaCode,
-            handler: this.lambdaHandler,
+        let lambdaInformation: cdk.aws_lambda.FunctionProps = {
+            functionName:  props?.env?.lambda?.name,
+            runtime: props?.env?.lambda?.java?.version ? props?.env?.lambda?.java?.version : lambda.Runtime.JAVA_21,
+            memorySize: props?.env?.lambda?.memory,
+            code: props?.env?.lambda?.code ? props?.env?.lambda?.code : lambda.Code.fromAsset('') ,
+            handler: props?.env?.lambda?.handler ? props?.env?.lambda?.handler : '',
             snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
             vpc: vpc,
             vpcSubnets: { subnets: [subnet] },
@@ -109,7 +55,7 @@ export class SpringbootApiLambdaStack extends MatsonBaseStack {
             Object.assign(lambdaInformation, { tracing: lambda.Tracing.DISABLED });
         }
         //Setup Lambda Function
-        const springBootApiLambdaCdkPoc = new Function(this, this.lambdaId, lambdaInformation);
+        const springBootApiLambdaCdkPoc = new Function(this, props?.env?.lambda?.id ? props?.env?.lambda?.id : '', lambdaInformation);
 
 
         // Grant X-Ray permissions to Lambda
@@ -144,7 +90,7 @@ export class SpringbootApiLambdaStack extends MatsonBaseStack {
             });
         }
         // Define the API Gateway resource
-        const api = new apigateway.LambdaRestApi(this, this.apiGatewayName, apiInformation);
+        const api = new apigateway.LambdaRestApi(this, props?.env?.apiGateway?.name ? props?.env?.apiGateway?.name : '' , apiInformation);
         
         this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
             value: api.url,

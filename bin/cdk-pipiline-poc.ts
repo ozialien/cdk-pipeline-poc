@@ -9,17 +9,17 @@ export interface CDKProps {
     readonly userInitials?: string,
     readonly pipelineName?: string,
     readonly projectFolder?: string,
-    readonly codestarid?: string
+    readonly codestartId?: string
 }
 export interface LambdaJavaProps {
-    readonly version?: lambda.Runtime
+    readonly version: lambda.Runtime
 }
 
 export interface LambdaProps {
-    readonly id?: string,
-    readonly name?: string,
-    readonly code?: lambda.AssetCode,
-    readonly handler?: string,
+    readonly id: string,
+    readonly name: string,
+    readonly code: lambda.AssetCode,
+    readonly handler: string,
     readonly java?: LambdaJavaProps,
     readonly memory?: number,
     readonly xrayEnabled?: boolean,
@@ -44,7 +44,7 @@ export const EnvContext: MatsonEnvironment = {
         userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,
         pipelineName: CdkSetupCodeStarParameterStack.ENV_PIPELINE_NAME,
         projectFolder: process.env.CDK_PROJECT_FOLDER ? process.env.CDK_PROJECT_FOLDER : 'product-catalog-sb-api',
-        codestarid: process.env.CDK_CODESTAR_ID ? process.env.CDK_CODESTAR_ID : 'a96e8694-d581-49b7-a402-7eb4aa97fe00',
+        codestartId: process.env.CDK_CODESTAR_ID ? process.env.CDK_CODESTAR_ID : 'a96e8694-d581-49b7-a402-7eb4aa97fe00',
     },    
     apiGateway: {
         name: 'ProductCatalogSbApi'

@@ -14,13 +14,13 @@ export class CDKPipelinePocStage extends Stage {
 
         //setup SQS to Lambda integration stack
         // new SQStoLambdaAppStack(this, 'CdkPipelinePocSQStoLambdaAppStack', {
-        //     env: props?.env,
+        //     env: EnvContext
         // });
 
         //Creating new EventBus stack1
-        // new EventBusAppStack(this, 'CdkPipelinePocEventBusAppStack');
+        // new EventBusAppStack(this, 'CdkPipelinePocEventBusAppStack', {env: EnvContext});
         
-        const productApiService = new SpringbootApiLambdaStack(this, 'SpringbootApiLambdaStack',{env: EnvContext} );
+        const productApiService = new SpringbootApiLambdaStack(this, 'SpringbootApiLambdaStack', {env: EnvContext});
         this.apiEndpointUrl = productApiService.apiEndpointUrl;
     }
 }
