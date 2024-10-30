@@ -17,14 +17,13 @@ export class XRayTracingBaseStack extends cdk.Stack {
   public apiGatewayName: string = '';
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps & {env: MatsonEnvironment}) {
-    super(scope, id, props);
-    console.log("Processing Custom Properties");
+    super(scope, id, props as cdk.StackProps);
+    console.log("Processing Custom Properties");   
     if (props) {     
         if (props.env.lambda) {
           if (props.env.lambda.name) {
             this.lambdaName = props.env.lambda.name;
           }
-          console.log(props);
           if (props.env.lambda.id) {
             this.lambdaId = props.env.lambda.id;
           }

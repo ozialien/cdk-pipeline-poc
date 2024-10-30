@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 import { SQStoLambdaAppStack } from './sqs-lambda-app-stack';
 import { EventBusAppStack } from './eventbus-app-stack';
 import { SpringbootApiLambdaStack } from './sb-lambda-app-stack';
+import { EnvContext } from '../bin/cdk-pipiline-poc';
 
 export class CDKPipelinePocStage extends Stage {
 
@@ -19,7 +20,7 @@ export class CDKPipelinePocStage extends Stage {
         //Creating new EventBus stack1
         // new EventBusAppStack(this, 'CdkPipelinePocEventBusAppStack');
         
-        const productApiService = new SpringbootApiLambdaStack(this, 'SpringbootApiLambdaStack');
+        const productApiService = new SpringbootApiLambdaStack(this, 'SpringbootApiLambdaStack',{env: EnvContext} );
         this.apiEndpointUrl = productApiService.apiEndpointUrl;
     }
 }

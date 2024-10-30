@@ -31,6 +31,7 @@ export class SpringbootApiLambdaStack extends XRayTracingBaseStack {
         const secretPartialArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}`;
         const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
 
+        console.log(props);
         //Setup Lambda Function
         const springBootApiLambdaCdkPoc = new Function(this, this.lambdaId, {
             functionName: this.lambdaName,
@@ -59,7 +60,7 @@ export class SpringbootApiLambdaStack extends XRayTracingBaseStack {
         dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
 
        // Define the API Gateway resource
-        const api = new apigateway.LambdaRestApi(this, 'ProductCatalogSbApi', {
+        const api = new apigateway.LambdaRestApi(this, this.apiGatewayName, {
             handler: springBootApiLambdaCdkPoc,
             proxy: false,
         });

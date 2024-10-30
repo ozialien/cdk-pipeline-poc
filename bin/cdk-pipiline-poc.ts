@@ -35,18 +35,18 @@ export interface ExtraStackProps {
 
 export interface MatsonEnvironment extends cdk.Environment, ExtraStackProps { }
 
-const EnvContext: MatsonEnvironment = {
+export const EnvContext: MatsonEnvironment = {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
     cdk: {
         timeout: cdk.Duration.seconds(30),
         userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,
         pipelineName: CdkSetupCodeStarParameterStack.ENV_PIPELINE_NAME,
-        projectFolder: process.env.CDK_PROJECT_FOLDER,
-        codestarid: process.env.CDK_CODESTAR_ID,
+        projectFolder: process.env.CDK_PROJECT_FOLDER ? process.env.CDK_PROJECT_FOLDER : 'product-catalog-sb-api',
+        codestarid: process.env.CDK_CODESTAR_ID ? process.env.CDK_CODESTAR_ID : 'a96e8694-d581-49b7-a402-7eb4aa97fe00',
     },
     apiGateway: {
-        name: ''
+        name: 'ProductCatalogSbApi'
     },
     lambda: {
         id: 'SpringBootApiLambdaCdkPoc',
@@ -59,7 +59,7 @@ const EnvContext: MatsonEnvironment = {
         memory: 2048
     }
 };
-
+console.log(EnvContext);
 
 const app = new cdk.App();
 /**
