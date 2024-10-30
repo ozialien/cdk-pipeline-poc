@@ -5,12 +5,16 @@ import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
 
 const EnvContext: cdk.StackProps = {
     env: {
-        //@ts-ignore
-        projectFolder: process.env.CDK_PROJECT_FOLDER,
-        codestarid: process.env.CDK_CODESTAR_ID,
         account: process.env.CDK_DEFAULT_ACCOUNT,
-        region: process.env.CDK_DEFAULT_REGION
-
+        region: process.env.CDK_DEFAULT_REGION,
+        //@ts-ignore
+        userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,
+        //@ts-ignore
+        pipelineName: CdkSetupCodeStarParameterStack.ENV_PIPELINE_NAME,
+         //@ts-ignore
+        projectFolder: process.env.CDK_PROJECT_FOLDER,
+         //@ts-ignore
+        codestarid: process.env.CDK_CODESTAR_ID   
     }
 };
 

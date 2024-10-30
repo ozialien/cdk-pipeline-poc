@@ -5,13 +5,18 @@
     "cdk-pipiline-poc": "bin/cdk-pipiline-poc.js"
   },
   "scripts": {
+    "java:version:21": "sdk install java 21.0.2-open && sdk default java 21.0.2-open",
+    "mvn:clean": "mvn -f ./product-catalog-sb-api clean -DskipTests=true",
     "mvn:install": "mvn -f ./product-catalog-sb-api clean install -DskipTests=true",
     "cdk:integrate:github": "cdk deploy CdkSetupCodeStarParameterStack",
     "cdk:synth": "cdk synth",    
-    "cdk:deploy": "npm run mvn:install && cdk deploy CdkPipilinePocStack",
+    "cdk:deploy": "cdk deploy CdkPipilinePocStack",
+    "e2e:all": "npm install && npm run spectral:lint && npm run mvn:install && npm run cdk:deploy",    
+    "e2e:clean": "npm ci && npm run mvn:clean",
+    "spectral:lint": "spectral lint oas/product.json",
     "codegen:help": "openapi-generator-cli help generate",
-    "codegen:lambda:server": "openapi-generator-cli generate -i oas/product.json -g spring -o codegen/server",
-    "codegen:jest:tests": "ts-node ./generate-tests.ts",
+    "codegen:lambda:server:beta": "openapi-generator-cli generate -i oas/product.json -g spring -o codegen/server",
+    "codegen:jest:tests:beta": "ts-node ./generate-tests.ts",
     "codegen:postman:tests": "openapi-generator-cli generate -i oas/product.json -g postman-collection -o postman"
   },
   "devDependencies": {
@@ -40,5 +45,4 @@
   "cdk": {
     "app": "npx ts-node bin/cdk-pipiline-poc.ts"
   }
-
 }
