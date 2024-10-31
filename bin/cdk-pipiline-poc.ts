@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { CdkPipilinePocStack } from '../lib/cdk-pipiline-poc-stack';
 import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
@@ -28,10 +29,36 @@ export interface ApiGatewayProps {
     readonly name?: string
 }
 
+export interface CognitoDomainProps {
+    id: string,
+    prefix: string
+}
+
+export interface CognitoClientProps {
+    name: string
+}
+
+export interface CognitoPoolProps {
+    id: string,
+    name: string,
+    domain: CognitoDomainProps,
+    client: CognitoClientProps,
+    props: cognito.UserPoolClientOptions,
+}
+
+export interface CognitoProps {
+    pool: CognitoPoolProps
+}
+
+export interface OAuth2Props {
+    cognito?: CognitoProps
+}
+
 export interface ExtraStackProps {
     readonly cdk?: CDKProps,
     readonly lambda?: LambdaProps,
-    readonly apiGateway?: ApiGatewayProps
+    readonly apiGateway?: ApiGatewayProps,
+    readonly oauth2?: OAuth2Props[]
 }
 
 export interface MatsonEnvironment extends cdk.Environment, ExtraStackProps { }
@@ -45,7 +72,7 @@ export const EnvContext: MatsonEnvironment = {
         pipelineName: CdkSetupCodeStarParameterStack.ENV_PIPELINE_NAME,
         projectFolder: process.env.CDK_PROJECT_FOLDER ? process.env.CDK_PROJECT_FOLDER : 'product-catalog-sb-api',
         codestartId: process.env.CDK_CODESTAR_ID ? process.env.CDK_CODESTAR_ID : 'a96e8694-d581-49b7-a402-7eb4aa97fe00',
-    },    
+    },
     apiGateway: {
         name: 'ProductCatalogSbApi'
     },
@@ -58,8 +85,49 @@ export const EnvContext: MatsonEnvironment = {
             'version': lambda.Runtime.JAVA_21
         },
         memory: 2048,
-        xrayEnabled: true        
-    }
+        xrayEnabled: true
+    },
+    oauth2: [
+        {
+            cognito: {
+                pool: {
+                    id: 'OProductCatalogOAuth2UserPool',
+                    name: 'PCOAuth2UserPool',
+                    domain: {
+                        id: 'UserPoolDomain',
+                        prefix: 'demo-oauth2'
+                    },
+                    client: {
+                        name: 'DemoAppClient'
+                    },
+                    props: {
+                        generateSecret: false, // Set to true if you need a client secret
+                        authFlows: {
+                            userPassword: true,
+                        },
+                        oAuth: {
+                            flows: {
+                                authorizationCodeGrant: true, // Enable authorization code flow
+                                implicitCodeGrant: true, // Enable implicit flow (for SPA if needed)
+                            },
+                            scopes: [
+                                cognito.OAuthScope.OPENID,
+                                cognito.OAuthScope.EMAIL,
+                                cognito.OAuthScope.PROFILE,
+                            ],
+                            callbackUrls: [
+                                'https://www.yourapp.com/callback', // Replace with your app's callback URL
+                            ],
+                            logoutUrls: [
+                                'https://www.yourapp.com/logout', // Replace with your app's logout URL
+                            ],
+                        }
+                    },
+
+                }
+            }
+        }
+    ]
 };
 console.log(EnvContext);
 
@@ -77,11 +145,11 @@ const app = new cdk.App();
  * cdk deploy CdkSetupCodeStarParameterStack
  * 
  **/
-new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', {env: EnvContext});
+new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', { env: EnvContext });
 
 /**
  * 
  * cdk deploy CdkPipilinePocStack
  * 
  */
-new CdkPipilinePocStack(app, 'CdkPipilinePocStack', {env: EnvContext});
+new CdkPipilinePocStack(app, 'CdkPipilinePocStack', { env: EnvContext });

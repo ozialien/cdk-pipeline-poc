@@ -9,9 +9,9 @@
     "mvn:clean": "mvn -f ./product-catalog-sb-api clean -DskipTests=true",
     "mvn:install": "mvn -f ./product-catalog-sb-api clean install -DskipTests=true",
     "cdk:integrate:github": "cdk deploy CdkSetupCodeStarParameterStack",
-    "cdk:synth": "cdk synth",    
+    "cdk:synth": "cdk synth",
     "cdk:deploy": "cdk deploy CdkPipilinePocStack",
-    "e2e:all": "npm install && npm run spectral:lint && npm run mvn:install && npm run cdk:deploy",    
+    "e2e:all": "npm install && npm run spectral:lint && npm run mvn:install && npm run cdk:deploy",
     "e2e:clean": "npm ci && npm run mvn:clean",
     "spectral:lint": "spectral lint oas/product.json",
     "codegen:help": "openapi-generator-cli help generate",
@@ -28,7 +28,9 @@
     "@types/node": "^20.12.7",
     "ajv": "^8.17.1",
     "aws-cdk": "2.142.1",
+    "aws-cdk-lib": "^2.164.1",
     "chai": "^5.1.2",
+    "constructs": "^10.4.2",
     "fs": "^0.0.1-security",
     "jest": "^29.7.0",
     "js-yaml": "^4.1.0",
@@ -37,10 +39,6 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "~5.4.5"
-  },
-  "dependencies": {
-    "aws-cdk-lib": "2.142.1",
-    "constructs": "^10.0.0"
   },
   "cdk": {
     "app": "npx ts-node bin/cdk-pipiline-poc.ts"
