@@ -20,9 +20,11 @@ export class MatsonStack extends cdk.Stack {
             if (!props) {
                 props = {};
             }
-            props.extra = mProps;
+            if (!props.extra) {
+                props.extra = {}
+            }
+            Object.assign(props.extra, mProps);
         }
-
     }
 
 }
