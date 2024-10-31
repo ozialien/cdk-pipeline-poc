@@ -14,9 +14,15 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
 
     public readonly apiEndpointUrl: cdk.CfnOutput;
 
-    constructor(scope: Construct, id: string, props?: cdk.StackProps & { env: MatsonEnvironment }) {
-        super(scope, id, props as cdk.StackProps);
+    constructor(scope: Construct, id: string, props?: cdk.StackProps ) {
+        super(scope, id, props);
 
+        const mProps:MatsonEnvironment = this.node.tryGetContext('matsonEnvironment');
+
+        if(! mProps ) {
+            throw new Error("Missing context: {matsonEnvironment: {...}}")
+        }
+        
         //getting vpc for lambda
         const vpc = ec2.Vpc.fromLookup(this, 'VPC', {
             vpcId: 'vpc-42de9927'
@@ -34,11 +40,11 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
         const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
 
         let lambdaInformation: cdk.aws_lambda.FunctionProps = {
-            functionName:  props?.env?.lambda?.name,
-            runtime: props?.env?.lambda?.java?.version ? props?.env?.lambda?.java?.version : lambda.Runtime.JAVA_21,
-            memorySize: props?.env?.lambda?.memory,
-            code: props?.env?.lambda?.code ? props?.env?.lambda?.code : lambda.Code.fromAsset('') ,
-            handler: props?.env?.lambda?.handler ? props?.env?.lambda?.handler : '',
+            functionName:  mProps?.lambda?.name,
+            runtime: mProps?.lambda?.java?.version ? mProps?.lambda?.java?.version : lambda.Runtime.JAVA_21,
+            memorySize: mProps?.lambda?.memory,
+            code: mProps?.lambda?.code ? mProps?.lambda?.code : lambda.Code.fromAsset('') ,
+            handler: mProps?.lambda?.handler ? mProps?.lambda?.handler : '',
             snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
             vpc: vpc,
             vpcSubnets: { subnets: [subnet] },
@@ -49,13 +55,13 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
             timeout: cdk.Duration.seconds(30)
         };
 
-        if (props?.env?.lambda?.xrayEnabled) {
+        if (mProps?.lambda?.xrayEnabled) {
             Object.assign(lambdaInformation, { tracing: lambda.Tracing.ACTIVE });
         } else {
             Object.assign(lambdaInformation, { tracing: lambda.Tracing.DISABLED });
         }
         //Setup Lambda Function
-        const springBootApiLambdaCdkPoc = new Function(this, props?.env?.lambda?.id ? props?.env?.lambda?.id : '', lambdaInformation);
+        const springBootApiLambdaCdkPoc = new Function(this, mProps?.lambda?.id ? mProps?.lambda?.id : '', lambdaInformation);
 
 
         // Grant X-Ray permissions to Lambda
@@ -76,7 +82,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
             handler: springBootApiLambdaCdkPoc,
             proxy: false,
         };
-        if (props?.env?.lambda?.xrayEnabled) {
+        if (mProps?.lambda?.xrayEnabled) {
             Object.assign(apiInformation, {
                 deployOptions: {
                     tracingEnabled: true, // Enable X-Ray tracing for API Gateway
@@ -90,7 +96,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
             });
         }
         // Define the API Gateway resource
-        const api = new apigateway.LambdaRestApi(this, props?.env?.apiGateway?.name ? props?.env?.apiGateway?.name : '' , apiInformation);
+        const api = new apigateway.LambdaRestApi(this, mProps?.apiGateway?.name ? mProps?.apiGateway?.name : '' , apiInformation);
         
         this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
             value: api.url,

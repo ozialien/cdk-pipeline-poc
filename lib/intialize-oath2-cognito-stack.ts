@@ -4,12 +4,18 @@ import { Construct } from 'constructs';
 import { MatsonEnvironment } from '../bin/cdk-pipiline-poc';
 
 export class InitializeCognitoOAuth2Stack extends cdk.Stack {
-    constructor(scope: Construct, id: string, props?: cdk.StackProps & { env: MatsonEnvironment }) {
+    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
+        
+        const mProps:MatsonEnvironment = this.node.tryGetContext('matsonEnvironment');
+
+        if(! mProps ) {
+            throw new Error("Missing context: {matsonEnvironment: {...}}")
+        }
         if (props) {
             if (props.env) {
-                if (props.env.oauth2) {
-                    props?.env?.oauth2.forEach(auth => {
+                if (mProps.oauth2) {
+                    mProps.oauth2.forEach(auth => {
                         if (auth.cognito) {
                             // Create a Cognito User Pool
                             const userPool = new cognito.UserPool(this, auth.cognito.pool.id, {

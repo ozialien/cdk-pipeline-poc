@@ -16,19 +16,20 @@ export class CdkSetupCodeStarParameterStack extends cdk.Stack {
 
 
 
-    constructor(scope: Construct, id: string, props?: cdk.StackProps & { env: MatsonEnvironment }) {
+    constructor(scope: Construct, id: string, props?: cdk.StackProps ) {
         super(scope, id, props);
+
+        const mProps:MatsonEnvironment = this.node.tryGetContext('matsonEnvironment');
+
+        if(! mProps ) {
+            throw new Error("Missing context: {matsonEnvironment: {...}}")
+        }
+
         let errors:string[] = [];
-        if (! props?.env?.cdk?.codestartId) {
-            errors.push("env.cdk.codestartId");
+        if (! mProps?.cdk?.codestartId) {
+            errors.push("codestartId");
         }
-        if (! props?.env?.account) {
-            errors.push("env.account");
-        }
-        if (! props?.env?.region) {
-            errors.push("env.region");
-        }
-        if (! props?.env?.cdk?.projectFolder) {
+        if (! mProps?.cdk?.projectFolder) {
             errors.push("env.cdk.projectFolder");
         }
         if(errors.length>0) {
@@ -37,7 +38,7 @@ export class CdkSetupCodeStarParameterStack extends cdk.Stack {
         // Define the CodeStar connection ID (replace with your actual connection ID)
         const codestarId = new ssm.StringParameter(this, 'CodeStarConnectionId', {
             parameterName: CdkSetupCodeStarParameterStack.CODESTARID,
-            stringValue: props?.env?.cdk?.codestartId ? props?.env?.cdk?.codestartId : '',
+            stringValue: mProps.cdk?.codestartId ? mProps.cdk?.codestartId : '',
             // Replace with actual CodeStar Connection ID
             description: 'CodeStar connection ID for GitHub repository',
             tier: ssm.ParameterTier.STANDARD
@@ -62,7 +63,7 @@ export class CdkSetupCodeStarParameterStack extends cdk.Stack {
         // Define the source project folder name
         const sbProjectFolderName = new ssm.StringParameter(this, 'SbProjectFolderName', {
             parameterName: CdkSetupCodeStarParameterStack.PROJECT_FOLDER,
-            stringValue: props?.env?.cdk?.projectFolder ?props?.env?.cdk?.projectFolder : '', // Replace with actual folder name if applicable
+            stringValue: mProps?.cdk?.projectFolder ? mProps?.cdk?.projectFolder : '', // Replace with actual folder name if applicable
             description: 'Source project folder name for the build step',
             tier: ssm.ParameterTier.STANDARD
         });

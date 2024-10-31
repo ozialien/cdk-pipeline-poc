@@ -65,8 +65,7 @@ export interface ExtraStackProps {
 export interface MatsonEnvironment extends cdk.Environment, ExtraStackProps { }
 
 export const EnvContext: MatsonEnvironment = {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION,
+
     cdk: {
         timeout: cdk.Duration.seconds(30),
         userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,
@@ -134,7 +133,12 @@ export const EnvContext: MatsonEnvironment = {
 };
 console.log(EnvContext);
 
-const Context = {env: EnvContext};
+const Context = {
+    env: {
+        account: process.env.CDK_DEFAULT_ACCOUNT,
+        region: process.env.CDK_DEFAULT_REGION
+    }
+};
 
 const app = new cdk.App();
 /**
