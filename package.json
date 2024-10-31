@@ -5,6 +5,7 @@
     "cdk-pipiline-poc": "bin/cdk-pipiline-poc.js"
   },
   "scripts": {
+    "tsc": "tsc --noEmit",
     "java:version:21": "sdk install java 21.0.2-open && sdk default java 21.0.2-open",
     "mvn:clean": "mvn -f ./product-catalog-sb-api clean -DskipTests=true",
     "mvn:install": "mvn -f ./product-catalog-sb-api clean install -DskipTests=true",
