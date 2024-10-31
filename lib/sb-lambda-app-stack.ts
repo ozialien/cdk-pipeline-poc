@@ -105,5 +105,9 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
         const product = products.addResource("{productSku}");
         product.addMethod('GET'); //get a specific product
         product.addMethod('DELETE'); //delete a specific product
+
+
+        new cdk.CfnOutput(this, 'apiGatewayUrl', { value: api.url});
+        new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName  ? lambdaInformation.functionName : ''});
     }
 }

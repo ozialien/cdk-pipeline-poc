@@ -968,8 +968,8 @@
         "description": "RFC8725 is supported",
         "flows": {
           "implicit": {
-            "authorizationUrl": "https://myauthorizationserver.com/authorize",
-            "refreshUrl": "/authorize",
+            "authorizationUrl": "https://demo-oauth2.auth.us-west-2.amazoncognito.com/oauth2/authorize",
+            "refreshUrl": "https://demo-oauth2.auth.us-west-2.amazoncognito.com/oauth2/authorize",
             "scopes": {
               "catalog/update": "Add or update items in the product catalog",
               "catalog/read": "Get details of the items in the product catalog"

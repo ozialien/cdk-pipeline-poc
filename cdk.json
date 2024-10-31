@@ -16,6 +16,65 @@
     ]
   },
   "context": {
+    "matsonEnvironment": {
+      "account": "${CDK_DEFAULT_ACCOUNT}",
+      "region": "${CDK_DEFAULT_REGION}",
+      "cdk": {
+        "timeout": 30,
+        "projectFolder": "${CDK_PROJECT_FOLDER:-product-catalog-sb-api}",
+        "codestartId": "${CDK_CODESTAR_ID:-a96e8694-d581-49b7-a402-7eb4aa97fe00}"
+      },
+      "apiGateway": {
+        "name": "ProductCatalogSbApi"
+      },
+      "lambda": {
+        "id": "SpringBootApiLambdaCdkPoc",
+        "name": "ProductCatalogSbApiLambda",
+        "code": {
+          "path": "product-catalog-sb-api/target/product-catalog-sb-api-0.0.1-SNAPSHOT.jar"
+        },
+        "handler": "poc.amitk.lambda.sb.api.infra.StreamLambdaHandler::handleRequest",
+        "java": {
+          "version": "JAVA_21"
+        },
+        "memory": 2048,
+        "xrayEnabled": true
+      },
+      "oauth2": [
+        {
+          "cognito": {
+            "pool": {
+              "id": "OProductCatalogOAuth2UserPool",
+              "name": "PCOAuth2UserPool",
+              "domain": {
+                "id": "UserPoolDomain",
+                "prefix": "demo-oauth2"
+              },
+              "client": {
+                "name": "DemoAppClient"
+              },
+              "props": {
+                "generateSecret": false,
+                "authFlows": {
+                  "userPassword": true
+                },
+                "oAuth": {
+                  "flows": {
+                    "authorizationCodeGrant": true,
+                    "implicitCodeGrant": true
+                  },
+                  "scopes": [
+                    "openid",
+                    "email",
+                    "profile"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
     "@aws-cdk/core:checkSecretUsage": true,
     "@aws-cdk/core:target-partitions": [

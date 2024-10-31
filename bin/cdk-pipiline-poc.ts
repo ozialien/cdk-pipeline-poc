@@ -96,7 +96,7 @@ export const EnvContext: MatsonEnvironment = {
                     name: 'PCOAuth2UserPool',
                     domain: {
                         id: 'UserPoolDomain',
-                        prefix: 'demo-oauth2'
+                        prefix: 'demo-oauth2' //https://demo-oauth2.auth.us-west-2.amazoncognito.com/oauth2/authorize
                     },
                     client: {
                         name: 'DemoAppClient'
