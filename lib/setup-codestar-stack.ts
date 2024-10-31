@@ -5,7 +5,7 @@ import { MatsonEnvironment } from '../bin/cdk-pipiline-poc';
 
 
 export class CdkSetupCodeStarParameterStack extends cdk.Stack {
-    public static ENV_USER_INITIALS: string = process.env.CDK_USER_INITIALS ? `/${process.env.CDK_USER_INITIALS}/` : '/'
+    public static ENV_USER_INITIALS: string = process.env.CDK_USER_INITIALS ? `/${process.env.CDK_USER_INITIALS}` : ''
     public static ENV_PIPELINE_NAME: string = process.env.CDK_PIPELINE_NAME ? `${process.env.CDK_PIPELINE_NAME}` : 'cdkpipelinepoc'
 
     public static PARAMETER_PREFIX: string = `/${CdkSetupCodeStarParameterStack.ENV_PIPELINE_NAME}/matlab${CdkSetupCodeStarParameterStack.ENV_USER_INITIALS}`;
