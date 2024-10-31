@@ -69,7 +69,7 @@ export interface ExtendedProps extends cdk.StackProps {
     extra?: ExtraProps
 }
 
-const Context = {
+const Context:ExtendedProps = {
     env: {
         account: process.env.CDK_DEFAULT_ACCOUNT,
         region: process.env.CDK_DEFAULT_REGION
