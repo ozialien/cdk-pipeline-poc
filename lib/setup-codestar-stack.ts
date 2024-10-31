@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { MatsonStack } from './sb-lambda-app-stack';
+import { ExtendedProps, ExtraProps } from '../bin/cdk-pipiline-poc';
 
 
 export class CdkSetupCodeStarParameterStack extends MatsonStack {
@@ -17,15 +18,16 @@ export class CdkSetupCodeStarParameterStack extends MatsonStack {
 
 
 
-    constructor(scope: Construct, id: string, props?: cdk.StackProps ) {
+    constructor(scope: Construct, id: string, props?: ExtendedProps) {
         super(scope, id, props);
 
         let errors:string[] = [];
         
-        if (! this.mProps?.cdk?.codestartId) {
+        if (! props?.extra?.cdk?.codestartId) {
             errors.push("codestartId");
         }
-        if (! this.mProps?.cdk?.projectFolder) {
+        
+        if (! props?.extra?.cdk?.projectFolder) {
             errors.push("env.cdk.projectFolder");
         }
         if(errors.length>0) {
@@ -34,7 +36,7 @@ export class CdkSetupCodeStarParameterStack extends MatsonStack {
         // Define the CodeStar connection ID (replace with your actual connection ID)
         const codestarId = new ssm.StringParameter(this, 'CodeStarConnectionId', {
             parameterName: CdkSetupCodeStarParameterStack.CODESTARID,
-            stringValue: this.mProps.cdk?.codestartId ? this.mProps.cdk?.codestartId : '',
+            stringValue: props?.extra?.cdk?.codestartId ? props?.extra?.cdk?.codestartId : '',
             // Replace with actual CodeStar Connection ID
             description: 'CodeStar connection ID for GitHub repository',
             tier: ssm.ParameterTier.STANDARD
@@ -59,7 +61,7 @@ export class CdkSetupCodeStarParameterStack extends MatsonStack {
         // Define the source project folder name
         const sbProjectFolderName = new ssm.StringParameter(this, 'SbProjectFolderName', {
             parameterName: CdkSetupCodeStarParameterStack.PROJECT_FOLDER,
-            stringValue: this.mProps?.cdk?.projectFolder ? this.mProps?.cdk?.projectFolder : '', // Replace with actual folder name if applicable
+            stringValue: props?.extra?.cdk?.projectFolder ? props?.extra?.cdk?.projectFolder : '', // Replace with actual folder name if applicable
             description: 'Source project folder name for the build step',
             tier: ssm.ParameterTier.STANDARD
         });

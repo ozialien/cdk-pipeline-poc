@@ -2,14 +2,13 @@ import * as cdk from 'aws-cdk-lib';
 import { CodeBuildStep, CodePipeline, CodePipelineSource } from "aws-cdk-lib/pipelines";
 import { Construct } from 'constructs';
 import { CDKPipelinePocStage } from './cdk-pipeline-poc-stage';
-import { ManualApprovalStep } from 'aws-cdk-lib/pipelines';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import { CdkSetupCodeStarParameterStack } from './setup-codestar-stack';
-import { MatsonEnvironment } from '../bin/cdk-pipiline-poc';
+import { ExtendedProps } from '../bin/cdk-pipiline-poc';
 
 export class CdkPipilinePocStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps & { env: MatsonEnvironment }) {
+  constructor(scope: Construct, id: string, props?: ExtendedProps) {
     super(scope, id, props);
 
     // The basic pipeline declaration. This sets the initial structure

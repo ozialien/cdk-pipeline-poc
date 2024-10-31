@@ -57,14 +57,17 @@ export interface OAuth2Props {
     cognito?: CognitoProps
 }
 
-export interface ExtraStackProps {
+export interface ExtraProps {
     readonly cdk?: CDKProps,
     readonly lambda?: LambdaProps,
     readonly apiGateway?: ApiGatewayProps,
     readonly oauth2?: OAuth2Props[]
 }
 
-export interface MatsonEnvironment extends cdk.Environment, ExtraStackProps { }
+
+export interface ExtendedProps extends cdk.StackProps {
+    extra?: ExtraProps
+}
 
 const Context = {
     env: {

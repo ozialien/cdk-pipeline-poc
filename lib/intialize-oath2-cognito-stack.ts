@@ -1,17 +1,17 @@
 import * as cdk from 'aws-cdk-lib';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
-import { MatsonEnvironment } from '../bin/cdk-pipiline-poc';
 import { MatsonStack } from './sb-lambda-app-stack';
+import { ExtendedProps } from '../bin/cdk-pipiline-poc';
 
 export class InitializeCognitoOAuth2Stack extends MatsonStack {
-    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    constructor(scope: Construct, id: string, props?: ExtendedProps) {
         super(scope, id, props);
         
         if (props) {
             if (props.env) {
-                if (this.mProps.oauth2) {
-                    this.mProps.oauth2.forEach(auth => {
+                if (props?.extra?.oauth2) {
+                    props?.extra?.oauth2.forEach(auth => {
                         if (auth.cognito) {
                             // Create a Cognito User Pool
                             const userPool = new cognito.UserPool(this, auth.cognito.pool.id, {

@@ -17,8 +17,6 @@
   },
   "context": {
     "matsonEnvironment": {
-      "account": "${CDK_DEFAULT_ACCOUNT}",
-      "region": "${CDK_DEFAULT_REGION}",
       "cdk": {
         "timeout": 60,
         "projectFolder": "${CDK_PROJECT_FOLDER:-product-catalog-sb-api}",
