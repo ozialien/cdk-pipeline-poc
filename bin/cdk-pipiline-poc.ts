@@ -58,6 +58,7 @@ export interface OAuth2Props {
 }
 
 export interface ExtraProps {
+    readonly oas?: string,
     readonly cdk?: CDKProps,
     readonly lambda?: LambdaProps,
     readonly apiGateway?: ApiGatewayProps,
@@ -75,6 +76,7 @@ const Context: ExtendedProps = {
         region: process.env.CDK_DEFAULT_REGION
     },
     extra: {
+        oas: "oas/product.json",
         cdk: {
             timeout: 30,
             userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,

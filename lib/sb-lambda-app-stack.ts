@@ -96,10 +96,17 @@ export class SpringbootApiLambdaStack extends MatsonStack {
 
         //grant function to read secret
         dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
-        let apiInformation = {
+
+        let apiInformation: apigateway.LambdaRestApiProps = {
             handler: springBootApiLambdaCdkPoc,
             proxy: false,
+
         };
+        if (props?.extra?.oas) {
+            Object.assign(apiInformation, {
+                apiDefinition: apigateway.ApiDefinition.fromAsset(props?.extra?.oas),
+            });
+        }
         if (props?.extra?.lambda?.xrayEnabled) {
             Object.assign(apiInformation, {
                 deployOptions: {
@@ -116,10 +123,6 @@ export class SpringbootApiLambdaStack extends MatsonStack {
         // Define the API Gateway resource
         const api = new apigateway.LambdaRestApi(this, props?.extra?.apiGateway?.name ? props?.extra?.apiGateway?.name : '', apiInformation);
 
-        this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
-            value: api.url,
-        });
-
         // Define the '/products' resource with a GET method
         const products = api.root.addResource('products');
         products.addMethod('GET'); //gets all the products
@@ -129,9 +132,9 @@ export class SpringbootApiLambdaStack extends MatsonStack {
         const product = products.addResource("{productSku}");
         product.addMethod('GET'); //get a specific product
         product.addMethod('DELETE'); //delete a specific product
-
-
-        new cdk.CfnOutput(this, 'apiGatewayUrl', { value: api.url });
+        this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
+            value: api.url,
+        });
         new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ? lambdaInformation.functionName : '' });
     }
 }
