@@ -15,11 +15,11 @@ export class MatsonStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: ExtendedProps) {
         super(scope, id, props);
 
-        if (!props) {
-            props = {};
-        }
         const mProps: ExtraProps = this.node.tryGetContext('matsonEnvironment');
         if (mProps) {
+            if (!props) {
+                props = {};
+            }
             props.extra = mProps;
         }
 
