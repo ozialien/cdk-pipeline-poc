@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 import * as events from 'aws-cdk-lib/aws-events';
 import { Duration } from 'aws-cdk-lib';
 
-export class EventBusAppStack extends cdk.Stack{
+export class EventBusAppStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps){
         super(scope, id, props);
         //setup event bus in eventbridge 

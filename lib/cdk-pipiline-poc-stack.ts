@@ -5,7 +5,7 @@ import { CDKPipelinePocStage } from './cdk-pipeline-poc-stage';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import { CdkSetupCodeStarParameterStack } from './setup-codestar-stack';
-import { ExtendedProps } from '../bin/cdk-pipiline-poc';
+import { ExtendedProps } from './config';
 
 export class CdkPipilinePocStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: ExtendedProps) {

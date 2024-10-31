@@ -1,33 +1,15 @@
 import * as cdk from 'aws-cdk-lib';
-import { Code, Function, Runtime, SnapStartConf, Version } from 'aws-cdk-lib/aws-lambda';
+import { Function, SnapStartConf } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as secretMgr from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
-import { ExtendedProps, ExtraProps } from '../bin/cdk-pipiline-poc';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import { ExtendedProps } from './config';
+import { MatsonStack } from './common';
 
-
-export class MatsonStack extends cdk.Stack {
-
-    constructor(scope: Construct, id: string, props?: ExtendedProps) {
-        super(scope, id, props);
-
-        const mProps: ExtraProps = this.node.tryGetContext('matsonEnvironment');
-        if (mProps) {
-            if (!props) {
-                props = {};
-            }
-            if (!props.extra) {
-                props.extra = {}
-            }
-            Object.assign(props.extra, mProps);
-        }
-    }
-
-}
 
 export class SpringbootApiLambdaStack extends MatsonStack {
 

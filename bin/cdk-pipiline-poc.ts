@@ -5,70 +5,7 @@ import { CdkPipilinePocStack } from '../lib/cdk-pipiline-poc-stack';
 import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { InitializeCognitoOAuth2Stack } from '../lib/intialize-oath2-cognito-stack';
-
-export interface CDKProps {
-    readonly timeout?: number,
-    readonly userInitials?: string,
-    readonly pipelineName?: string,
-    readonly projectFolder?: string,
-    readonly codestartId?: string
-}
-export interface LambdaJavaProps {
-    readonly version: lambda.Runtime
-}
-export interface LambdaCodeProps {
-    readonly path: string
-}
-export interface LambdaProps {
-    readonly id: string,
-    readonly name: string,
-    readonly code: LambdaCodeProps,
-    readonly handler: string,
-    readonly java?: LambdaJavaProps,
-    readonly memory?: number,
-    readonly xrayEnabled?: boolean,
-}
-export interface ApiGatewayProps {
-    readonly name?: string
-}
-
-export interface CognitoDomainProps {
-    id: string,
-    prefix: string
-}
-
-export interface CognitoClientProps {
-    name: string
-}
-
-export interface CognitoPoolProps {
-    id: string,
-    name: string,
-    domain: CognitoDomainProps,
-    client: CognitoClientProps,
-    props: cognito.UserPoolClientOptions,
-}
-
-export interface CognitoProps {
-    pool: CognitoPoolProps
-}
-
-export interface OAuth2Props {
-    cognito?: CognitoProps
-}
-
-export interface ExtraProps {
-    readonly oas?: string,
-    readonly cdk?: CDKProps,
-    readonly lambda?: LambdaProps,
-    readonly apiGateway?: ApiGatewayProps,
-    readonly oauth2?: OAuth2Props[]
-}
-
-
-export interface ExtendedProps extends cdk.StackProps {
-    extra?: ExtraProps
-}
+import { ExtendedProps } from '../lib/config';
 
 const Context: ExtendedProps = {
     env: {

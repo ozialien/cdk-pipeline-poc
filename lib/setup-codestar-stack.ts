@@ -1,8 +1,7 @@
-import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
-import { MatsonStack } from './sb-lambda-app-stack';
-import { ExtendedProps, ExtraProps } from '../bin/cdk-pipiline-poc';
+import { ExtendedProps } from './config';
+import { MatsonStack } from './common';
 
 
 export class CdkSetupCodeStarParameterStack extends MatsonStack {

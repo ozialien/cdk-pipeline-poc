@@ -1,8 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
-import { MatsonStack } from './sb-lambda-app-stack';
-import { ExtendedProps } from '../bin/cdk-pipiline-poc';
+import { ExtendedProps } from './config';
+import { MatsonStack } from './common';
 
 export class InitializeCognitoOAuth2Stack extends MatsonStack {
     constructor(scope: Construct, id: string, props?: ExtendedProps) {

@@ -16,8 +16,8 @@
     "cdk:teardown:cognito": "cdk destroy InitializeCognitoOAuth2Stack",
     "cdk:deploy": "cdk deploy CdkPipilinePocStack",
     "cdk:teardown": "cdk destroy CdkPipilinePocStack",
-    "e2e:build": "npm install && npm run spectral:lint && npm run mvn:install",
-    "e2e:deploy": "npm install && npm run spectral:lint && npm run mvn:install && npm run cdk:deploy",
+    "e2e:build": "npm install && npm run tsc && npm run spectral:lint && npm run mvn:install",
+    "e2e:deploy": "npm install && npm run tsc && npm run spectral:lint && npm run mvn:install && npm run cdk:deploy",
     "e2e:clean": "npm ci && npm run mvn:clean",
     "spectral:lint": "spectral lint oas/product.json",
     "codegen:help": "openapi-generator-cli help generate",
@@ -48,5 +48,6 @@
   },
   "cdk": {
     "app": "npx ts-node bin/cdk-pipiline-poc.ts"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
