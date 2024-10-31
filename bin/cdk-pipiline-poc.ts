@@ -4,6 +4,7 @@ import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { CdkPipilinePocStack } from '../lib/cdk-pipiline-poc-stack';
 import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { InitializeCognitoOAuth2Stack } from '../lib/intialize-oath2-cognito-stack';
 
 export interface CDKProps {
     readonly timeout?: cdk.Duration,
@@ -114,13 +115,15 @@ export const EnvContext: MatsonEnvironment = {
                                 cognito.OAuthScope.OPENID,
                                 cognito.OAuthScope.EMAIL,
                                 cognito.OAuthScope.PROFILE,
-                            ],
+                            ]
+                            /*
+                            ,
                             callbackUrls: [
                                 'https://www.yourapp.com/callback', // Replace with your app's callback URL
                             ],
                             logoutUrls: [
                                 'https://www.yourapp.com/logout', // Replace with your app's logout URL
-                            ],
+                            ], */
                         }
                     },
 
@@ -130,6 +133,8 @@ export const EnvContext: MatsonEnvironment = {
     ]
 };
 console.log(EnvContext);
+
+const Context = {env: EnvContext};
 
 const app = new cdk.App();
 /**
@@ -145,11 +150,17 @@ const app = new cdk.App();
  * cdk deploy CdkSetupCodeStarParameterStack
  * 
  **/
-new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', { env: EnvContext });
+new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', Context);
+
+
+/**
+ * Setup Cognito
+ */
+new InitializeCognitoOAuth2Stack(app, "InitializeCognitoOAuth2Stack", Context)
 
 /**
  * 
  * cdk deploy CdkPipilinePocStack
  * 
  */
-new CdkPipilinePocStack(app, 'CdkPipilinePocStack', { env: EnvContext });
+new CdkPipilinePocStack(app, 'CdkPipilinePocStack', Context);
