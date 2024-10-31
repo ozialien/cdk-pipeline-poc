@@ -2,20 +2,16 @@ import * as cdk from 'aws-cdk-lib';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
 import { MatsonEnvironment } from '../bin/cdk-pipiline-poc';
+import { MatsonStack } from './sb-lambda-app-stack';
 
-export class InitializeCognitoOAuth2Stack extends cdk.Stack {
+export class InitializeCognitoOAuth2Stack extends MatsonStack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
         
-        const mProps:MatsonEnvironment = this.node.tryGetContext('matsonEnvironment');
-
-        if(! mProps ) {
-            throw new Error("Missing context: {matsonEnvironment: {...}}")
-        }
         if (props) {
             if (props.env) {
-                if (mProps.oauth2) {
-                    mProps.oauth2.forEach(auth => {
+                if (this.mProps.oauth2) {
+                    this.mProps.oauth2.forEach(auth => {
                         if (auth.cognito) {
                             // Create a Cognito User Pool
                             const userPool = new cognito.UserPool(this, auth.cognito.pool.id, {

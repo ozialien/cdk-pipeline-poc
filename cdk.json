@@ -20,7 +20,7 @@
       "account": "${CDK_DEFAULT_ACCOUNT}",
       "region": "${CDK_DEFAULT_REGION}",
       "cdk": {
-        "timeout": 30,
+        "timeout": 60,
         "projectFolder": "${CDK_PROJECT_FOLDER:-product-catalog-sb-api}",
         "codestartId": "${CDK_CODESTAR_ID:-a96e8694-d581-49b7-a402-7eb4aa97fe00}"
       },

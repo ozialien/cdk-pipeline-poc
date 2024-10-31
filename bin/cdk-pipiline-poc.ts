@@ -7,20 +7,22 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { InitializeCognitoOAuth2Stack } from '../lib/intialize-oath2-cognito-stack';
 
 export interface CDKProps {
-    readonly timeout?: cdk.Duration,
+    readonly timeout?: number,
     readonly userInitials?: string,
     readonly pipelineName?: string,
     readonly projectFolder?: string,
     readonly codestartId?: string
 }
 export interface LambdaJavaProps {
-    readonly version: lambda.Runtime
+    readonly version: string
 }
-
+export interface LambdaCodeProps {
+    readonly path: string
+}
 export interface LambdaProps {
     readonly id: string,
     readonly name: string,
-    readonly code: lambda.AssetCode,
+    readonly code: LambdaCodeProps,
     readonly handler: string,
     readonly java?: LambdaJavaProps,
     readonly memory?: number,
@@ -63,75 +65,6 @@ export interface ExtraStackProps {
 }
 
 export interface MatsonEnvironment extends cdk.Environment, ExtraStackProps { }
-
-export const EnvContext: MatsonEnvironment = {
-
-    cdk: {
-        timeout: cdk.Duration.seconds(30),
-        userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,
-        pipelineName: CdkSetupCodeStarParameterStack.ENV_PIPELINE_NAME,
-        projectFolder: process.env.CDK_PROJECT_FOLDER ? process.env.CDK_PROJECT_FOLDER : 'product-catalog-sb-api',
-        codestartId: process.env.CDK_CODESTAR_ID ? process.env.CDK_CODESTAR_ID : 'a96e8694-d581-49b7-a402-7eb4aa97fe00',
-    },
-    apiGateway: {
-        name: 'ProductCatalogSbApi'
-    },
-    lambda: {
-        id: 'SpringBootApiLambdaCdkPoc',
-        name: 'ProductCatalogSbApiLambda',
-        code: lambda.Code.fromAsset("product-catalog-sb-api/target/product-catalog-sb-api-0.0.1-SNAPSHOT.jar"),
-        handler: "poc.amitk.lambda.sb.api.infra.StreamLambdaHandler::handleRequest",
-        java: {
-            'version': lambda.Runtime.JAVA_21
-        },
-        memory: 2048,
-        xrayEnabled: true
-    },
-    oauth2: [
-        {
-            cognito: {
-                pool: {
-                    id: 'OProductCatalogOAuth2UserPool',
-                    name: 'PCOAuth2UserPool',
-                    domain: {
-                        id: 'UserPoolDomain',
-                        prefix: 'demo-oauth2' //https://demo-oauth2.auth.us-west-2.amazoncognito.com/oauth2/authorize
-                    },
-                    client: {
-                        name: 'DemoAppClient'
-                    },
-                    props: {
-                        generateSecret: false, // Set to true if you need a client secret
-                        authFlows: {
-                            userPassword: true,
-                        },
-                        oAuth: {
-                            flows: {
-                                authorizationCodeGrant: true, // Enable authorization code flow
-                                implicitCodeGrant: true, // Enable implicit flow (for SPA if needed)
-                            },
-                            scopes: [
-                                cognito.OAuthScope.OPENID,
-                                cognito.OAuthScope.EMAIL,
-                                cognito.OAuthScope.PROFILE,
-                            ]
-                            /*
-                            ,
-                            callbackUrls: [
-                                'https://www.yourapp.com/callback', // Replace with your app's callback URL
-                            ],
-                            logoutUrls: [
-                                'https://www.yourapp.com/logout', // Replace with your app's logout URL
-                            ], */
-                        }
-                    },
-
-                }
-            }
-        }
-    ]
-};
-console.log(EnvContext);
 
 const Context = {
     env: {

@@ -10,19 +10,30 @@ import { MatsonEnvironment } from '../bin/cdk-pipiline-poc';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 
 
-export class SpringbootApiLambdaStack extends cdk.Stack {
+export class MatsonStack extends cdk.Stack {
+
+    public mProps: MatsonEnvironment;
+
+    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+        super(scope, id, props);
+
+        this.mProps = this.node.tryGetContext('matsonEnvironment');
+
+        if (!this.mProps) {
+            throw new Error("Missing context: {matsonEnvironment: {...}}")
+        }
+    }
+
+}
+
+export class SpringbootApiLambdaStack extends MatsonStack {
 
     public readonly apiEndpointUrl: cdk.CfnOutput;
 
-    constructor(scope: Construct, id: string, props?: cdk.StackProps ) {
+    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        const mProps:MatsonEnvironment = this.node.tryGetContext('matsonEnvironment');
 
-        if(! mProps ) {
-            throw new Error("Missing context: {matsonEnvironment: {...}}")
-        }
-        
         //getting vpc for lambda
         const vpc = ec2.Vpc.fromLookup(this, 'VPC', {
             vpcId: 'vpc-42de9927'
@@ -39,12 +50,16 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
         const secretPartialArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}`;
         const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
 
+        const lambdaLoadCode = this.mProps?.lambda?.code?.path  ? this.mProps?.lambda?.code?.path : '';
+        const lambdaRuntime = this.mProps?.lambda?.java?.version ? this.mProps?.lambda?.java?.version : 'JAVA_21';
+        const lambdaHandler = this.mProps?.lambda?.handler ? this.mProps?.lambda?.handler : '';
+        const lambdaID = this.mProps?.lambda?.id ? this.mProps?.lambda?.id : ''
         let lambdaInformation: cdk.aws_lambda.FunctionProps = {
-            functionName:  mProps?.lambda?.name,
-            runtime: mProps?.lambda?.java?.version ? mProps?.lambda?.java?.version : lambda.Runtime.JAVA_21,
-            memorySize: mProps?.lambda?.memory,
-            code: mProps?.lambda?.code ? mProps?.lambda?.code : lambda.Code.fromAsset('') ,
-            handler: mProps?.lambda?.handler ? mProps?.lambda?.handler : '',
+            functionName: this.mProps?.lambda?.name,
+            runtime: lambda.Runtime.JAVA_21,
+            memorySize: this.mProps?.lambda?.memory,
+            code: lambda.Code.fromAsset(lambdaLoadCode),
+            handler: lambdaHandler,
             snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
             vpc: vpc,
             vpcSubnets: { subnets: [subnet] },
@@ -52,16 +67,16 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
             environment: {
                 "datasource_secret_id": dbAccessSecretId,
             },
-            timeout: cdk.Duration.seconds(30)
+            timeout: this.mProps.cdk?.timeout ? cdk.Duration.seconds(this.mProps.cdk?.timeout) : cdk.Duration.seconds(30)
         };
 
-        if (mProps?.lambda?.xrayEnabled) {
+        if (this.mProps?.lambda?.xrayEnabled) {
             Object.assign(lambdaInformation, { tracing: lambda.Tracing.ACTIVE });
         } else {
             Object.assign(lambdaInformation, { tracing: lambda.Tracing.DISABLED });
         }
         //Setup Lambda Function
-        const springBootApiLambdaCdkPoc = new Function(this, mProps?.lambda?.id ? mProps?.lambda?.id : '', lambdaInformation);
+        const springBootApiLambdaCdkPoc = new Function(this, lambdaID, lambdaInformation);
 
 
         // Grant X-Ray permissions to Lambda
@@ -82,7 +97,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
             handler: springBootApiLambdaCdkPoc,
             proxy: false,
         };
-        if (mProps?.lambda?.xrayEnabled) {
+        if (this.mProps?.lambda?.xrayEnabled) {
             Object.assign(apiInformation, {
                 deployOptions: {
                     tracingEnabled: true, // Enable X-Ray tracing for API Gateway
@@ -96,8 +111,8 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
             });
         }
         // Define the API Gateway resource
-        const api = new apigateway.LambdaRestApi(this, mProps?.apiGateway?.name ? mProps?.apiGateway?.name : '' , apiInformation);
-        
+        const api = new apigateway.LambdaRestApi(this, this.mProps?.apiGateway?.name ? this.mProps?.apiGateway?.name : '', apiInformation);
+
         this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
             value: api.url,
         });
@@ -113,7 +128,7 @@ export class SpringbootApiLambdaStack extends cdk.Stack {
         product.addMethod('DELETE'); //delete a specific product
 
 
-        new cdk.CfnOutput(this, 'apiGatewayUrl', { value: api.url});
-        new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName  ? lambdaInformation.functionName : ''});
+        new cdk.CfnOutput(this, 'apiGatewayUrl', { value: api.url });
+        new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ? lambdaInformation.functionName : '' });
     }
 }
