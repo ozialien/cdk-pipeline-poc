@@ -18,6 +18,7 @@
     "cdk:teardown": "cdk destroy CdkPipilinePocStack",
     "e2e:build": "npm install && npm run tsc && npm run spectral:lint && npm run mvn:install",
     "e2e:deploy": "npm run e2e:build && npm run cdk:deploy",
+    "e2e:teardown": "npm run cdk:teardown && npm run e2e:clean",
     "e2e:clean": "npm ci && npm run mvn:clean",
     "spectral:lint": "spectral lint oas/product.json",
     "codegen:help": "openapi-generator-cli help generate",
