@@ -14,6 +14,7 @@ import { MatsonStack } from './common';
 export class SpringbootApiLambdaStack extends MatsonStack {
 
     public readonly apiEndpointUrl: cdk.CfnOutput;
+    public readonly lambdaFunctionName: cdk.CfnOutput;
 
     constructor(scope: Construct, id: string, props?: ExtendedProps) {
         super(scope, id, props);
@@ -104,6 +105,12 @@ export class SpringbootApiLambdaStack extends MatsonStack {
         }
         // Define the API Gateway resource
         const api = new apigateway.LambdaRestApi(this, props?.extra?.apiGateway?.name ? props?.extra?.apiGateway?.name : '', apiInformation);
+       
+        this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
+            value: api.url,
+        });
+        
+        this.lambdaFunctionName = new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ? lambdaInformation.functionName : '' });
 
         // Define the '/products' resource with a GET method
         const products = api.root.addResource('products');
@@ -114,9 +121,6 @@ export class SpringbootApiLambdaStack extends MatsonStack {
         const product = products.addResource("{productSku}");
         product.addMethod('GET'); //get a specific product
         product.addMethod('DELETE'); //delete a specific product
-        this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
-            value: api.url,
-        });
-        new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ? lambdaInformation.functionName : '' });
+        
     }
 }
