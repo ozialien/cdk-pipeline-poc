@@ -37,12 +37,12 @@ export class CdkPipilinePocStack extends cdk.Stack {
              "npm run e2e:build",
              "npx cdk synth"
            */
-          commands: [`cd ${sbProjectFolderName}`,
-            "mvn package -DskipTests",
-            "cd ..",
-            "npm run e2e:clean",
-            "npm run e2e:build",
-            "npx cdk synth"]
+             commands: [`cd ${sbProjectFolderName}`,
+              "mvn package -DskipTests",
+              "cd ..",
+              "npm ci", 
+              "npm run build", 
+              "npx cdk synth"]
         }),
         codeBuildDefaults: {
           partialBuildSpec: codebuild.BuildSpec.fromObject({
