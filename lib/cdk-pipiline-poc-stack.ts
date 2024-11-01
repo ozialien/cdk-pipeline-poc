@@ -30,6 +30,13 @@ export class CdkPipilinePocStack extends cdk.Stack {
               connectionArn: `arn:aws:codestar-connections:${matlabRegion}:${matlabAccount}:connection/${codestarid}`
             }
           ),
+          /**
+            TODO: Should change to this when I get my own repo to pull
+
+             "npm ci",
+             "npm run e2e:build",
+             "npx cdk synth"
+           */
           commands: [`cd ${sbProjectFolderName}`,
             "mvn package -DskipTests",
             "cd ..",
