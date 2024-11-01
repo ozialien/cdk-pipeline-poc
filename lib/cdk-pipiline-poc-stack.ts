@@ -33,8 +33,8 @@ export class CdkPipilinePocStack extends cdk.Stack {
           commands: [`cd ${sbProjectFolderName}`,
             "mvn package -DskipTests",
             "cd ..",
-            "npm ci",
-            "npm run build",
+            "npm run e2e:clean",
+            "npm run e2e:build",
             "npx cdk synth"]
         }),
         codeBuildDefaults: {

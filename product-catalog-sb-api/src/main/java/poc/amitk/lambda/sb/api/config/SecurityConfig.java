@@ -11,7 +11,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("oauth2.url")
+    @Value("spring.security.oauth2.client.provider.cognito.authorization-uri")
     private String jwkSetUri;
 
     @Bean
