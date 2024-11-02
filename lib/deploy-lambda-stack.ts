@@ -9,6 +9,7 @@ import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { ExtendedProps } from './config';
 import { MatsonStack } from './common';
+import { DeployOAuth2DemoStage } from './deploy-lambda-stage';
 
 
 export class DeployOAuth2DemoStack extends MatsonStack {
@@ -18,11 +19,6 @@ export class DeployOAuth2DemoStack extends MatsonStack {
 
     constructor(scope: Construct, id: string, props?: ExtendedProps) {
         super(scope, id, props);
-
-
-        const deployFromS3= new DeployOAuth2DemoStage(this, 'erDeployFromS3', props);
-        const deployMatlabStage = cdkpipeline.addStage(deployMatlab);
-
 
         //getting vpc for lambda
         const vpc = ec2.Vpc.fromLookup(this, 'VPC', {
