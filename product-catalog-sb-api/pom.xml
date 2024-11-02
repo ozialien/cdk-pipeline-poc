@@ -17,6 +17,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<aws.java.sdk.version>2.20.10</aws.java.sdk.version>
+		<aws-xray-recorder.version>2.18.2</aws-xray-recorder.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -64,22 +65,22 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-xray-recorder-sdk-core</artifactId>
-			<version>2.13.0</version>
+			<version>${aws-xray-recorder.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-xray-recorder-sdk-aws-sdk</artifactId>
-			<version>2.13.0</version>
+			<version>${aws-xray-recorder.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-xray-recorder-sdk-apache-http</artifactId>
-			<version>2.13.0</version>
+			<version>${aws-xray-recorder.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-xray-recorder-sdk-spring</artifactId>
-			<version>2.13.0</version>
+			<version>${aws-xray-recorder.version}</version>
 		</dependency>
 		<!-- AWS XRAY Tracing End -->
 
@@ -87,13 +88,11 @@
 		<!-- OAuth2 Dependency Start -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-			<version>3.3.5</version>
+			<artifactId>spring-boot-starter-security</artifactId>		
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
-			<version>3.3.5</version>
 		</dependency>
 		<!-- OAuth2 Dependency End -->
 	</dependencies>
