@@ -6,6 +6,8 @@ import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { InitializeCognitoOAuth2Stack } from '../lib/intialize-oath2-cognito-stack';
 import { ExtendedProps } from '../lib/config';
+import { DeployOAuth2DemoStack } from '../lib/deploy-demo-stack';
+
 
 const Context: ExtendedProps = {
     env: {
@@ -110,3 +112,6 @@ new InitializeCognitoOAuth2Stack(app, "InitializeCognitoOAuth2Stack", Context)
  * 
  */
 new CdkPipilinePocStack(app, 'CdkPipilinePocStack', Context);
+
+
+new DeployOAuth2DemoStack(app, "DeployOAuth2DemoStack", Context);
