@@ -27,7 +27,7 @@ export interface LambdaProps {
     readonly xrayEnabled?: boolean,
 }
 export interface ApiGatewayProps {
-    readonly name?: string
+    readonly name: string
 }
 
 export interface CognitoDomainProps {
