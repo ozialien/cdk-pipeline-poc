@@ -16,11 +16,12 @@ export class DeployOAuth2DemoStack extends cdk.Stack {
     const matlabAccount = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.ACCOUNT);
     const matlabRegion = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.REGION);
     const codestarid = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.CODESTARID);
- 
+    const sbProjectFolderName = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.PROJECT_FOLDER);
+
     const deployOAuth2DemoPipeline = new CodePipeline(this, "OAuth2DemoPipeline",
       {
         pipelineName: 'OAuth2DemoPipeline',
-        synth: new CodeBuildStep("SynthStep", {
+        synth:  new CodeBuildStep("SynthStep", {
           input: CodePipelineSource.connection(
             'nsalbarde/cdk-pipeline-poc',
             "main",
@@ -28,7 +29,19 @@ export class DeployOAuth2DemoStack extends cdk.Stack {
               connectionArn: `arn:aws:codestar-connections:${matlabRegion}:${matlabAccount}:connection/${codestarid}`
             }
           ),
-             commands: []
+          /**
+            TODO: Should change to this when I get my own repo to pull
+
+             "npm ci",
+             "npm run e2e:build",
+             "npx cdk synth"
+           */
+             commands: [`cd ${sbProjectFolderName}`,
+              "mvn package -DskipTests",
+              "cd ..",
+              "npm ci", 
+              "npm run build", 
+              "npx cdk synth DeployOAuth2DemoStack"]
         }),
         codeBuildDefaults: {
           partialBuildSpec: codebuild.BuildSpec.fromObject({
@@ -44,6 +57,7 @@ export class DeployOAuth2DemoStack extends cdk.Stack {
           },
         }
       });
+
 
 
     const deployOAuth2DemoStage = new DeployOAuth2DemoStage(this, 'DeployOAuth2DemoStage', props);
