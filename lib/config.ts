@@ -20,7 +20,7 @@ export interface LambdaJavaProps {
 export interface LambdaProps {
     readonly id: string,
     readonly name: string,
-    readonly code: lambda.Code,
+    code: lambda.Code,
     readonly handler: string,
     readonly java?: LambdaJavaProps,
     readonly memory?: number,
