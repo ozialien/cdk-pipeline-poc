@@ -11,17 +11,9 @@ export class DeployOAuth2DemoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: ExtendedProps) {
     super(scope, id, props);
 
-    // The basic pipeline declaration. This sets the initial structure
-    // of our pipeline
-    const matlabAccount = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.ACCOUNT);
-    const matlabRegion = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.REGION);
-    const codestarid = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.CODESTARID);
-    const sbProjectFolderName = ssm.StringParameter.valueForStringParameter(this, CdkSetupCodeStarParameterStack.PROJECT_FOLDER);
-
-
-    const deployOAuth2DemoPipeline = new CodePipeline(this, "erDeployOAuth2DemoPipeline",
+    const deployOAuth2DemoPipeline = new CodePipeline(this, "DeployOAuth2DemoPipeline",
       {
-        pipelineName: 'erDeployOAuth2DemoPipeline',
+        pipelineName: 'DeployOAuth2DemoPipeline',
         synth: new CodeBuildStep("SynthStep", {       
              commands: ["echo Hello World"]
         }),
@@ -32,7 +24,7 @@ export class DeployOAuth2DemoStack extends cdk.Stack {
         }
       });
 
-    const deployOAuth2DemoStage = new DeployOAuth2DemoStage(this, 'erDeployOAuth2DemoStage', props);
+    const deployOAuth2DemoStage = new DeployOAuth2DemoStage(this, 'DeployOAuth2DemoStage', props);
     const deployOAuth2DemoStack = deployOAuth2DemoPipeline.addStage(deployOAuth2DemoStage);
   }
 }

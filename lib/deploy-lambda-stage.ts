@@ -1,7 +1,6 @@
 import { CfnOutput, Stage, StageProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { SpringbootApiLambdaStack } from './sb-lambda-app-stack';
-import { DeployOAuth2DemoStack } from './deploy-lambda-stack';
+import { DeployOAuth2DemoLambdaStack } from './deploy-lambda-stack';
 
 export class DeployOAuth2DemoStage extends Stage {
 
@@ -10,7 +9,7 @@ export class DeployOAuth2DemoStage extends Stage {
 
     constructor(scope: Construct, id: string, props?: StageProps) {
         super(scope, id, props);
-        const productApiService = new DeployOAuth2DemoStack(this, 'erDeployOAuth2DemoStack', props);
+        const productApiService = new DeployOAuth2DemoLambdaStack(this, 'DeployOAuth2DemoLambdaStack', props);
         this.apiEndpointUrl = productApiService.apiEndpointUrl;
         this.lambdaFunctionName = productApiService.lambdaFunctionName;
     }

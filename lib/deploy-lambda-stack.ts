@@ -9,10 +9,10 @@ import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { ExtendedProps } from './config';
 import { MatsonStack } from './common';
-import { DeployOAuth2DemoStage } from './deploy-lambda-stage';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 
 
-export class DeployOAuth2DemoStack extends MatsonStack {
+export class DeployOAuth2DemoLambdaStack extends MatsonStack {
 
     public readonly apiEndpointUrl: cdk.CfnOutput;
     public readonly lambdaFunctionName: cdk.CfnOutput;
@@ -40,7 +40,7 @@ export class DeployOAuth2DemoStack extends MatsonStack {
             let lambdaInformation: cdk.aws_lambda.FunctionProps = {
                 functionName: props?.extra?.lambda.name,
                 runtime: lambdaRuntime ,
-                code: props?.extra?.lambda?.code,
+                code: lambda.Code.fromBucket(Bucket.fromBucketArn(scope,'erBucket','aws:s3:::erider'),'/lambdas/product-catalog/product-catalog-sb-api-0.0.1-SNAPSHOT.jar'),
                 memorySize: props?.extra?.lambda.memory,
                 handler: props?.extra?.lambda.handler,
                 snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
