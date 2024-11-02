@@ -16,13 +16,11 @@ export interface CDKProps {
 export interface LambdaJavaProps {
     readonly version: lambda.Runtime
 }
-export interface LambdaCodeProps {
-    readonly path: string
-}
+
 export interface LambdaProps {
     readonly id: string,
     readonly name: string,
-    readonly code: LambdaCodeProps,
+    readonly code: lambda.Code,
     readonly handler: string,
     readonly java?: LambdaJavaProps,
     readonly memory?: number,

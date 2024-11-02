@@ -35,90 +35,89 @@ export class SpringbootApiLambdaStack extends MatsonStack {
         const dbAccessSecretId = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/dbaccesssecretid');
         const secretPartialArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}`;
         const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
+        if (props?.extra?.lambda) {
+            const lambdaRuntime = props?.extra?.lambda?.java?.version ?  props?.extra?.lambda?.java?.version : lambda.Runtime.JAVA_21;            
+            let lambdaInformation: cdk.aws_lambda.FunctionProps = {
+                functionName: props?.extra?.lambda.name,
+                runtime: lambdaRuntime ,
+                code: props?.extra?.lambda?.code,
+                memorySize: props?.extra?.lambda.memory,
+                handler: props?.extra?.lambda.handler,
+                snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
+                vpc: vpc,
+                vpcSubnets: { subnets: [subnet] },
+                securityGroups: [securityGroup],
+                environment: {
+                    "datasource_secret_id": dbAccessSecretId,
+                },
+                timeout: props?.extra?.cdk?.timeout ? cdk.Duration.seconds(props?.extra?.cdk?.timeout) : cdk.Duration.seconds(30)
+            };
 
-        const lambdaLoadCode = props?.extra?.lambda?.code?.path ? props?.extra?.lambda?.code?.path : '';
-        const lambdaRuntime = props?.extra?.lambda?.java?.version ? props?.extra?.lambda?.java?.version : lambda.Runtime.JAVA_21;
-        const lambdaHandler = props?.extra?.lambda?.handler ? props?.extra?.lambda?.handler : '';
-        const lambdaID = props?.extra?.lambda?.id ? props?.extra?.lambda?.id : ''
-        let lambdaInformation: cdk.aws_lambda.FunctionProps = {
-            functionName: props?.extra?.lambda?.name,
-            runtime: lambdaRuntime,
-            memorySize: props?.extra?.lambda?.memory,
-            code: lambda.Code.fromAsset(lambdaLoadCode),
-            handler: lambdaHandler,
-            snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
-            vpc: vpc,
-            vpcSubnets: { subnets: [subnet] },
-            securityGroups: [securityGroup],
-            environment: {
-                "datasource_secret_id": dbAccessSecretId,
-            },
-            timeout: props?.extra?.cdk?.timeout ? cdk.Duration.seconds(props?.extra?.cdk?.timeout) : cdk.Duration.seconds(30)
-        };
+            if (props?.extra?.lambda.xrayEnabled) {
+                Object.assign(lambdaInformation, { tracing: lambda.Tracing.ACTIVE });
+            } else {
+                Object.assign(lambdaInformation, { tracing: lambda.Tracing.DISABLED });
+            }
+            //Setup Lambda Function
+            const springBootApiLambdaCdkPoc = new Function(this,  props?.extra?.lambda.id, lambdaInformation);
 
-        if (props?.extra?.lambda?.xrayEnabled) {
-            Object.assign(lambdaInformation, { tracing: lambda.Tracing.ACTIVE });
+
+            // Grant X-Ray permissions to Lambda
+            springBootApiLambdaCdkPoc.role?.addManagedPolicy(
+                ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess')
+            );
+
+            // const version = new Version(this, 'ProductCatalogLambdaVersion', {
+            //     lambda: springBootApiLambdaCdkPoc,
+            //   }); 
+            // const version = springBootApiLambdaCdkPoc.currentVersion;
+            springBootApiLambdaCdkPoc.addAlias("Live");
+
+
+            //grant function to read secret
+            dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
+
+            let apiInformation: apigateway.LambdaRestApiProps = {
+                handler: springBootApiLambdaCdkPoc,
+                proxy: false,
+
+            };
+            if (props?.extra?.oas) {
+                Object.assign(apiInformation, {
+                    apiDefinition: apigateway.ApiDefinition.fromAsset(props?.extra?.oas),
+                });
+            }
+            if (props?.extra?.lambda.xrayEnabled) {
+                Object.assign(apiInformation, {
+                    deployOptions: {
+                        tracingEnabled: true, // Enable X-Ray tracing for API Gateway
+                    }
+                });
+            } else {
+                Object.assign(apiInformation, {
+                    deployOptions: {
+                        tracingEnabled: false, // Disable X-Ray tracing for API Gateway
+                    }
+                });
+            }
+            // Define the API Gateway resource
+            const api = new apigateway.LambdaRestApi(this, props?.extra?.apiGateway?.name ? props?.extra?.apiGateway?.name : '', apiInformation);
+            this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
+                value: api.url,
+            });
+            this.lambdaFunctionName = new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ? lambdaInformation.functionName : '' });
+
+            // Define the '/products' resource with a GET method
+            const products = api.root.addResource('products');
+            products.addMethod('GET'); //gets all the products
+            products.addMethod('POST'); //add new product
+            products.addMethod('DELETE'); //delete all products
+
+            const product = products.addResource("{productSku}");
+            product.addMethod('GET'); //get a specific product
+            product.addMethod('DELETE'); //delete a specific product
         } else {
-            Object.assign(lambdaInformation, { tracing: lambda.Tracing.DISABLED });
+            throw new Error("Missing Lambda configuration!");
         }
-        //Setup Lambda Function
-        const springBootApiLambdaCdkPoc = new Function(this, lambdaID, lambdaInformation);
-
-
-        // Grant X-Ray permissions to Lambda
-        springBootApiLambdaCdkPoc.role?.addManagedPolicy(
-            ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess')
-        );
-
-        // const version = new Version(this, 'ProductCatalogLambdaVersion', {
-        //     lambda: springBootApiLambdaCdkPoc,
-        //   }); 
-        // const version = springBootApiLambdaCdkPoc.currentVersion;
-        springBootApiLambdaCdkPoc.addAlias("Live");
-
-
-        //grant function to read secret
-        dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
-
-        let apiInformation: apigateway.LambdaRestApiProps = {
-            handler: springBootApiLambdaCdkPoc,
-            proxy: false,
-
-        };
-        if (props?.extra?.oas) {
-            Object.assign(apiInformation, {
-                apiDefinition: apigateway.ApiDefinition.fromAsset(props?.extra?.oas),
-            });
-        }
-        if (props?.extra?.lambda?.xrayEnabled) {
-            Object.assign(apiInformation, {
-                deployOptions: {
-                    tracingEnabled: true, // Enable X-Ray tracing for API Gateway
-                }
-            });
-        } else {
-            Object.assign(apiInformation, {
-                deployOptions: {
-                    tracingEnabled: false, // Disable X-Ray tracing for API Gateway
-                }
-            });
-        }
-        // Define the API Gateway resource
-        const api = new apigateway.LambdaRestApi(this, props?.extra?.apiGateway?.name ? props?.extra?.apiGateway?.name : '', apiInformation);
-        this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
-            value: api.url,
-        });
-        this.lambdaFunctionName = new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ? lambdaInformation.functionName : '' });
-
-        // Define the '/products' resource with a GET method
-        const products = api.root.addResource('products');
-        products.addMethod('GET'); //gets all the products
-        products.addMethod('POST'); //add new product
-        products.addMethod('DELETE'); //delete all products
-
-        const product = products.addResource("{productSku}");
-        product.addMethod('GET'); //get a specific product
-        product.addMethod('DELETE'); //delete a specific product
-        
     }
 }

@@ -30,7 +30,7 @@ export class CdkSetupCodeStarParameterStack extends MatsonStack {
             errors.push("props.extra.cdk.projectFolder");
         }
         if(errors.length>0) {
-            throw new Error(`Missing ${errors.toString()}`)
+            throw new Error(`Missing ${errors}`);
         }
         // Define the CodeStar connection ID (replace with your actual connection ID)
         const codestarId = new ssm.StringParameter(this, 'CodeStarConnectionId', {
