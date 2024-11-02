@@ -4,7 +4,8 @@ import { SpringbootApiLambdaStack } from './sb-lambda-app-stack';
 
 export class CDKPipelinePocStage extends Stage {
 
-    public readonly apiEndpointUrl: CfnOutput;
+    public readonly apiEndpointUrl: CfnOutput;    
+    public readonly lambdaFunctionName: CfnOutput;
 
     constructor(scope: Construct, id: string, props?: StageProps) {
         super(scope, id, props);
@@ -19,5 +20,6 @@ export class CDKPipelinePocStage extends Stage {
 
         const productApiService = new SpringbootApiLambdaStack(this, 'SpringbootApiLambdaStack', props);
         this.apiEndpointUrl = productApiService.apiEndpointUrl;
+        this.lambdaFunctionName = productApiService.lambdaFunctionName;
     }
 }

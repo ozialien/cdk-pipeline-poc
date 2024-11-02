@@ -10,7 +10,7 @@
     "mvn:clean": "mvn -f ./product-catalog-sb-api clean -DskipTests=true",
     "mvn:install": "mvn -f ./product-catalog-sb-api clean install -DskipTests=true",
     "cdk:integrate:github": "cdk deploy CdkSetupCodeStarParameterStack",
-    "cdk:synth": "cdk synth",
+    "cdk:synth": "cdk synth CdkPipilinePocStack",
     "cdk:setup:codestar": "cdk deploy CdkSetupCodeStarParameterStack",
     "cdk:setup:cognito": "cdk deploy InitializeCognitoOAuth2Stack",
     "cdk:teardown:cognito": "cdk destroy InitializeCognitoOAuth2Stack",

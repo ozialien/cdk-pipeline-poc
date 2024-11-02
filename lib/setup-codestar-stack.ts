@@ -23,11 +23,11 @@ export class CdkSetupCodeStarParameterStack extends MatsonStack {
         let errors:string[] = [];
         
         if (! props?.extra?.cdk?.codestartId) {
-            errors.push("codestartId");
+            errors.push("props.extra.cdk.codestartId");
         }
         
         if (! props?.extra?.cdk?.projectFolder) {
-            errors.push("env.cdk.projectFolder");
+            errors.push("props.extra.cdk.projectFolder");
         }
         if(errors.length>0) {
             throw new Error(`Missing ${errors.toString()}`)

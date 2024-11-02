@@ -37,12 +37,12 @@ export class SpringbootApiLambdaStack extends MatsonStack {
         const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
 
         const lambdaLoadCode = props?.extra?.lambda?.code?.path ? props?.extra?.lambda?.code?.path : '';
-        const lambdaRuntime = props?.extra?.lambda?.java?.version ? props?.extra?.lambda?.java?.version : 'JAVA_21';
+        const lambdaRuntime = props?.extra?.lambda?.java?.version ? props?.extra?.lambda?.java?.version : lambda.Runtime.JAVA_21;
         const lambdaHandler = props?.extra?.lambda?.handler ? props?.extra?.lambda?.handler : '';
         const lambdaID = props?.extra?.lambda?.id ? props?.extra?.lambda?.id : ''
         let lambdaInformation: cdk.aws_lambda.FunctionProps = {
             functionName: props?.extra?.lambda?.name,
-            runtime: lambda.Runtime.JAVA_21,
+            runtime: lambdaRuntime,
             memorySize: props?.extra?.lambda?.memory,
             code: lambda.Code.fromAsset(lambdaLoadCode),
             handler: lambdaHandler,
@@ -105,11 +105,9 @@ export class SpringbootApiLambdaStack extends MatsonStack {
         }
         // Define the API Gateway resource
         const api = new apigateway.LambdaRestApi(this, props?.extra?.apiGateway?.name ? props?.extra?.apiGateway?.name : '', apiInformation);
-       
         this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", {
             value: api.url,
         });
-        
         this.lambdaFunctionName = new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ? lambdaInformation.functionName : '' });
 
         // Define the '/products' resource with a GET method
