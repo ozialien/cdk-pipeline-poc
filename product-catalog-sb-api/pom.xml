@@ -85,7 +85,12 @@
 		<!-- AWS XRAY Tracing End -->
 
 
-		<!-- OAuth2 Dependency Start -->
+		<!-- OAuth2 Dependency Start
+
+		Just defining these without configuration in spring boot will
+		automatically invoke security and cause a 401
+		Using the apiGateway against Oauth2 might be a better approach
+	    -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>		
