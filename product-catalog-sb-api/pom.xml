@@ -90,7 +90,36 @@
 		Just defining these without configuration in spring boot will
 		automatically invoke security and cause a 401
 		Using the apiGateway against Oauth2 might be a better approach
-	    -->
+	    
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    @ConditionalOnProperty(name = "app.security.cognito-enabled", havingValue = "true")
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/public/**").permitAll()
+                        .anyRequest().authenticated())
+                .oauth2Client(withDefaults());
+        return http.build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "app.security.cognito-enabled", havingValue = "false")
+    public SecurityFilterChain securityFilterChainNoAuth(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // Allow all requests without authentication
+                );
+
+        return http.build();
+    }
+}
+
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>		
@@ -99,7 +128,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
-		<!-- OAuth2 Dependency End -->
+		 OAuth2 Dependency End -->
 	</dependencies>
 
 	<build>
