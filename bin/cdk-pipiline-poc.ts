@@ -35,49 +35,51 @@ const Context: ExtendedProps = {
             memory: 2048,
             xrayEnabled: true
         },
-        oauth2: [
-            {
-                cognito: {
-                    pool: {
-                        id: 'OProductCatalogOAuth2UserPool',
-                        name: 'PCOAuth2UserPool',
-                        domain: {
-                            id: 'UserPoolDomain',
-                            prefix: 'demo-oauth2'
+        oauth2:
+        {
+            cognito: {
+                pool: {
+                    id: 'OProductCatalogOAuth2UserPool',
+                    name: 'PCOAuth2UserPool',
+                    authorizer: {
+                        id: 'CognitoAuthorizer'
+                    },
+                    domain: {
+                        id: 'UserPoolDomain',
+                        prefix: 'demo-oauth2'
+                    },
+                    client: {
+                        name: 'DemoAppClient'
+                    },
+                    props: {
+                        generateSecret: false, // Set to true if you need a client secret
+                        authFlows: {
+                            userPassword: true,
                         },
-                        client: {
-                            name: 'DemoAppClient'
-                        },
-                        props: {
-                            generateSecret: false, // Set to true if you need a client secret
-                            authFlows: {
-                                userPassword: true,
+                        oAuth: {
+                            flows: {
+                                authorizationCodeGrant: true, // Enable authorization code flow
+                                implicitCodeGrant: true, // Enable implicit flow (for SPA if needed)
                             },
-                            oAuth: {
-                                flows: {
-                                    authorizationCodeGrant: true, // Enable authorization code flow
-                                    implicitCodeGrant: true, // Enable implicit flow (for SPA if needed)
-                                },
-                                scopes: [
-                                    cognito.OAuthScope.OPENID,
-                                    cognito.OAuthScope.EMAIL,
-                                    cognito.OAuthScope.PROFILE,
-                                ]
-                                /*
-                                ,
-                                callbackUrls: [
-                                    'https://www.yourapp.com/callback', // Replace with your app's callback URL
-                                ],
-                                logoutUrls: [
-                                    'https://www.yourapp.com/logout', // Replace with your app's logout URL
-                                ], */
-                            }
-                        },
+                            scopes: [
+                                cognito.OAuthScope.OPENID,
+                                cognito.OAuthScope.EMAIL,
+                                cognito.OAuthScope.PROFILE,
+                            ]
+                            /*
+                            ,
+                            callbackUrls: [
+                                'https://www.yourapp.com/callback', // Replace with your app's callback URL
+                            ],
+                            logoutUrls: [
+                                'https://www.yourapp.com/logout', // Replace with your app's logout URL
+                            ], */
+                        }
+                    },
 
-                    }
                 }
             }
-        ]
+        }
     }
 }
 

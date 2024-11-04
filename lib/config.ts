@@ -38,6 +38,9 @@ export interface CognitoDomainProps {
 export interface CognitoClientProps {
     name: string
 }
+export interface CognitoAuthorizerProps {
+    id: string
+}
 
 export interface CognitoPoolProps {
     id: string,
@@ -45,6 +48,7 @@ export interface CognitoPoolProps {
     domain: CognitoDomainProps,
     client: CognitoClientProps,
     props: cognito.UserPoolClientOptions,
+    authorizer: CognitoAuthorizerProps
 }
 
 export interface CognitoProps {
@@ -52,7 +56,7 @@ export interface CognitoProps {
 }
 
 export interface OAuth2Props {
-    cognito?: CognitoProps
+    cognito: CognitoProps
 }
 
 export interface ExtraProps {
@@ -60,7 +64,7 @@ export interface ExtraProps {
     readonly cdk?: CDKProps,
     readonly lambda?: LambdaProps,
     readonly apiGateway?: ApiGatewayProps,
-    readonly oauth2?: OAuth2Props[]
+    readonly oauth2?: OAuth2Props
 }
 
 

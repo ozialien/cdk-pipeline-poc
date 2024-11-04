@@ -57,20 +57,25 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             // Secret read permissions
             dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
 
-            // Cognito User Pool and App Client
-            const userPool = new cognito.UserPool(this, 'UserPool', {
-                userPoolName: 'MyUserPool',
-                signInAliases: { email: true },
-            });
-            const userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
-                userPool,
-                generateSecret: true,
-                oAuth: {
-                    flows: { authorizationCodeGrant: true },
-                    scopes: [cognito.OAuthScope.OPENID, cognito.OAuthScope.PROFILE],
-                    callbackUrls: ['https://yourcallbackurl.com'],
-                },
-            });
+            // Conditional OAuth2 setup
+            let authorizer;
+            if (props.extra.oauth2?.cognito) {
+                // Cognito User Pool and App Client
+                const userPool = new cognito.UserPool(this, props.extra.oauth2.cognito.pool.id, {
+                    userPoolName: props.extra.oauth2.cognito.pool.name,
+                    signInAliases: { email: true },
+                });
+                const userPoolClient = new cognito.UserPoolClient(this,props.extra.oauth2.cognito.pool.client.name, {
+                    userPool,
+                    generateSecret: true,
+                    oAuth: props.extra.oauth2.cognito.pool.props.oAuth
+                });
+
+                // Cognito Authorizer
+                authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.id, {
+                    cognitoUserPools: [userPool],
+                });
+            }
 
             // API Gateway configuration
             let apiInformation: apigateway.LambdaRestApiProps = {
@@ -81,25 +86,26 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             if (props.extra.oas) {
                 apiInformation.apiDefinition = apigateway.ApiDefinition.fromAsset(props.extra.oas);
             }
+
+            
             const api = new apigateway.LambdaRestApi(this, props.extra.apiGateway?.name ?? '', apiInformation);
 
             this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", { value: api.url });
             this.lambdaFunctionName = new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ?? '' });
 
-            // Cognito Authorizer
-            const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
-                cognitoUserPools: [userPool],
-            });
-
-            // Define the '/products' resource with secured methods
+            // Define the '/products' resource with conditional OAuth2 authorization
             const products = api.root.addResource('products');
-            products.addMethod('GET', undefined, { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer });
-            products.addMethod('POST', undefined, { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer });
-            products.addMethod('DELETE', undefined, { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer });
+            const authorizationOptions = props.extra.oauth2
+                ? { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer }
+                : undefined;
+                
+            products.addMethod('GET', undefined, authorizationOptions);
+            products.addMethod('POST', undefined, authorizationOptions);
+            products.addMethod('DELETE', undefined, authorizationOptions);
 
             const product = products.addResource("{productSku}");
-            product.addMethod('GET', undefined, { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer });
-            product.addMethod('DELETE', undefined, { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer });
+            product.addMethod('GET', undefined, authorizationOptions);
+            product.addMethod('DELETE', undefined, authorizationOptions);
         } else {
             throw new Error("Missing Lambda configuration!");
         }
