@@ -46,20 +46,20 @@ const Context: ExtendedProps = {
         {
             cognito: {
                 pool: {
-                    cdkId: 'OProductCatalogOAuth2UserPool',
-                    name: 'PCOAuth2UserPool',
+                    cdkId: 'ClientSecretUserPool',
+                    name: 'ClientSecretUserPool',
                     authorizer: {
-                        cdkId: 'CognitoAuthorizer'
+                        cdkId: 'CSAuthorizer'
                     },
                     domain: {
-                        cdkId: 'UserPoolDomain',
-                        prefix: 'demo-oauth2'
+                        cdkId: 'CSPoolDomain',
+                        prefix: 'cspool'
                     },
                     client: {
                         name: 'DemoAppClient'
                     },
                     props: {
-                        generateSecret: false, // Set to true if you need a client secret
+                        generateSecret: true, // Set to true if you need a client secret
                         authFlows: {
                             userPassword: true,
                         },
