@@ -83,10 +83,13 @@ export class SpringbootApiLambdaStack extends MatsonStack {
                 proxy: false,
                 deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
             };
-            if (props.extra.oas) {
-                apiInformation.apiDefinition = apigateway.ApiDefinition.fromAsset(props.extra.oas);
-            }
 
+            // If the openapi spec exists add it to the api properties
+            if (props.extra.oas) {
+                Object.assign(apiInformation, {
+                    apiDefinition: apigateway.ApiDefinition.fromAsset(props.extra.oas),
+                });
+            }
             
             const api = new apigateway.LambdaRestApi(this, props.extra.apiGateway?.name ?? '', apiInformation);
 
