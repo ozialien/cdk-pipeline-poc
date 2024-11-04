@@ -83,13 +83,15 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             let lambdaIntegration = undefined;
             if (props?.extra?.oas) {
                 api = new apigateway.SpecRestApi(this, 'Api', {
-                    restApiName: props.extra.apiGateway?.name ?? 'MyApi',
+                    restApiName: props.extra.apiGateway?.name ?? '',
                     // Load OpenAPI definition from file
                     apiDefinition: apigateway.ApiDefinition.fromAsset(props.extra.oas),
                     deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
                 });
                 // Lambda integration for API methods (if you need to add custom integrations on top of OpenAPI)
-                lambdaIntegration = new apigateway.LambdaIntegration(springBootApiLambdaCdkPoc);
+                lambdaIntegration = new apigateway.LambdaIntegration(springBootApiLambdaCdkPoc, {
+                    proxy: false,
+                });
 
             } else {
                 // API Gateway configuration

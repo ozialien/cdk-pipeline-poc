@@ -45,6 +45,7 @@ export class InitializeCognitoOAuth2Stack extends MatsonStack {
 
                         // Outputs
                         new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
+                        new cdk.CfnOutput(this, 'UserPoolArn', { value: userPool.userPoolArn });
                         new cdk.CfnOutput(this, 'AppClientId', { value: userPoolClient.userPoolClientId });
                         new cdk.CfnOutput(this, 'HostedUIDomain', {
                             value: userPoolDomain.domainName,
