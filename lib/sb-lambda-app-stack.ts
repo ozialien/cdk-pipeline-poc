@@ -78,7 +78,10 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             }
 
 
-
+            ////
+            //
+            // CDK is very confused and hard to follow in this area.  There are multiple ways to do the same thing.
+            //
             let api;
             let lambdaIntegration = undefined;
             if (props?.extra?.oas) {
