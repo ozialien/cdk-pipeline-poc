@@ -14,10 +14,13 @@ const Context: ExtendedProps = {
         region: process.env.CDK_DEFAULT_REGION
     },
     extra: {
-        oas: {
-            cdkId: "ProductFromOAS",
-            value: "oas/product.json"
-        },
+        //
+        // When using OAS CDK stack detects a conflict.  But is fine without it.
+        //
+        // oas: {
+        //     cdkId: "ProductFromOAS",
+        //     value: "oas/product.json"
+        // },
         cdk: {
             timeout: 30,
             userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,
