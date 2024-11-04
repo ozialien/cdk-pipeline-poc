@@ -83,30 +83,22 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             // CDK is very confused and hard to follow in this area.  There are multiple ways to do the same thing.
             //
             let api;
-            let lambdaIntegration = undefined;
+            const lambdaIntegration = new apigateway.LambdaIntegration(springBootApiLambdaCdkPoc, {
+                proxy: true,  // Set to true for proxy mode or configure custom integration options if needed
+            });
             if (props?.extra?.oas) {
                 api = new apigateway.SpecRestApi(this, props?.extra?.oas.cdkId, {
                     restApiName: props.extra.apiGateway?.name ?? '',
                     // Load OpenAPI definition from file
                     apiDefinition: apigateway.ApiDefinition.fromAsset(props.extra.oas.value),
                     deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
-                });
-                // Lambda integration for API methods (if you need to add custom integrations on top of OpenAPI)
-                lambdaIntegration = new apigateway.LambdaIntegration(springBootApiLambdaCdkPoc, {
-                    proxy: false,
-                });
-
+                });               
             } else {
-                // API Gateway configuration
-                let apiInformation: apigateway.LambdaRestApiProps = {
-                    handler: springBootApiLambdaCdkPoc,
-                    proxy: false,
+                // Configure non-OpenAPI API Gateway
+                api = new apigateway.RestApi(this, props.extra.apiGateway?.name ?? '', {
                     deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
-                };
-                api = new apigateway.RestApi(this, props?.extra?.apiGateway?.name ?? '', apiInformation);
+                });
             }
-
-
 
             this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", { value: api.url });
             this.lambdaFunctionName = new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ?? '' });
