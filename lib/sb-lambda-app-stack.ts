@@ -46,7 +46,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
                 tracing: props.extra.lambda.xrayEnabled ? lambda.Tracing.ACTIVE : lambda.Tracing.DISABLED,
             };
 
-            const springBootApiLambdaCdkPoc = new Function(this, props.extra.lambda.id, lambdaInformation);
+            const springBootApiLambdaCdkPoc = new Function(this, props.extra.lambda.cdkId, lambdaInformation);
 
             // X-Ray permissions
             springBootApiLambdaCdkPoc.role?.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'));
@@ -61,7 +61,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             let authorizer;
             if (props.extra.oauth2?.cognito) {
                 // Cognito User Pool and App Client
-                const userPool = new cognito.UserPool(this, props.extra.oauth2.cognito.pool.id, {
+                const userPool = new cognito.UserPool(this, props.extra.oauth2.cognito.pool.cdkId, {
                     userPoolName: props.extra.oauth2.cognito.pool.name,
                     signInAliases: { email: true },
                 });
@@ -72,7 +72,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
                 });
 
                 // Cognito Authorizer
-                authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.id, {
+                authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.cdkId, {
                     cognitoUserPools: [userPool],
                 });
             }
@@ -85,10 +85,10 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             let api;
             let lambdaIntegration = undefined;
             if (props?.extra?.oas) {
-                api = new apigateway.SpecRestApi(this, 'Api', {
+                api = new apigateway.SpecRestApi(this, props?.extra?.oas.cdkId, {
                     restApiName: props.extra.apiGateway?.name ?? '',
                     // Load OpenAPI definition from file
-                    apiDefinition: apigateway.ApiDefinition.fromAsset(props.extra.oas),
+                    apiDefinition: apigateway.ApiDefinition.fromAsset(props.extra.oas.value),
                     deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
                 });
                 // Lambda integration for API methods (if you need to add custom integrations on top of OpenAPI)

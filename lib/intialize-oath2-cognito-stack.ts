@@ -19,7 +19,7 @@ export class InitializeCognitoOAuth2Stack extends MatsonStack {
                     //props?.extra?.oauth2.forEach(auth => {
                     if (auth.cognito) {
                         // Create a Cognito User Pool
-                        const userPool = new cognito.UserPool(this, auth.cognito.pool.id, {
+                        const userPool = new cognito.UserPool(this, auth.cognito.pool.cdkId, {
                             userPoolName: auth.cognito?.pool.name,
                             signInAliases: {
                                 email: true,
@@ -29,7 +29,7 @@ export class InitializeCognitoOAuth2Stack extends MatsonStack {
                         });
 
                         // Define a Domain for Hosted UI
-                        const userPoolDomain = userPool.addDomain(auth.cognito.pool.domain.id, {
+                        const userPoolDomain = userPool.addDomain(auth.cognito.pool.domain.cdkId, {
                             cognitoDomain: {
                                 domainPrefix: auth.cognito.pool.domain.prefix,
                             },

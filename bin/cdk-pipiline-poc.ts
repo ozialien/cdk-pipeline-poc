@@ -6,6 +6,7 @@ import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { InitializeCognitoOAuth2Stack } from '../lib/intialize-oath2-cognito-stack';
 import { ExtendedProps } from '../lib/config';
+import { SpringbootApiLambdaStack } from '../lib/sb-lambda-app-stack';
 
 const Context: ExtendedProps = {
     env: {
@@ -13,7 +14,10 @@ const Context: ExtendedProps = {
         region: process.env.CDK_DEFAULT_REGION
     },
     extra: {
-        oas: "oas/product.json",
+        oas: {
+            cdkId: "ProductFromOAS",
+            value: "oas/product.json"
+        },
         cdk: {
             timeout: 30,
             userInitials: CdkSetupCodeStarParameterStack.ENV_USER_INITIALS,
@@ -25,7 +29,7 @@ const Context: ExtendedProps = {
             name: 'ProductCatalogSbApi'
         },
         lambda: {
-            id: 'SpringBootApiLambdaCdkPoc',
+            cdkId: 'SpringBootApiLambdaCdkPoc',
             name: 'ProductCatalogSbApiLambda',
             code: lambda.Code.fromAsset("product-catalog-sb-api/target/product-catalog-sb-api-0.0.1-SNAPSHOT.jar"),
             handler: "poc.amitk.lambda.sb.api.infra.StreamLambdaHandler::handleRequest",
@@ -39,13 +43,13 @@ const Context: ExtendedProps = {
         {
             cognito: {
                 pool: {
-                    id: 'OProductCatalogOAuth2UserPool',
+                    cdkId: 'OProductCatalogOAuth2UserPool',
                     name: 'PCOAuth2UserPool',
                     authorizer: {
-                        id: 'CognitoAuthorizer'
+                        cdkId: 'CognitoAuthorizer'
                     },
                     domain: {
-                        id: 'UserPoolDomain',
+                        cdkId: 'UserPoolDomain',
                         prefix: 'demo-oauth2'
                     },
                     client: {
@@ -111,4 +115,6 @@ new InitializeCognitoOAuth2Stack(app, "InitializeCognitoOAuth2Stack", Context)
  * cdk deploy CdkPipilinePocStack
  * 
  */
-new CdkPipilinePocStack(app, 'CdkPipilinePocStack', Context);
+// new CdkPipilinePocStack(app, 'CdkPipilinePocStack', Context);
+
+new SpringbootApiLambdaStack(app, 'SpringbootApiLambdaStack', Context);

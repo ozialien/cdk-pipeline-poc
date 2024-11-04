@@ -18,7 +18,7 @@ export interface LambdaJavaProps {
 }
 
 export interface LambdaProps {
-    readonly id: string,
+    readonly cdkId: string,
     readonly name: string,
     readonly code: lambda.Code,
     readonly handler: string,
@@ -31,36 +31,41 @@ export interface ApiGatewayProps {
 }
 
 export interface CognitoDomainProps {
-    id: string,
-    prefix: string
+    readonly cdkId: string,
+    readonly prefix: string
 }
 
 export interface CognitoClientProps {
-    name: string
+    readonly name: string
 }
 export interface CognitoAuthorizerProps {
-    id: string
+    readonly cdkId: string
 }
 
 export interface CognitoPoolProps {
-    id: string,
-    name: string,
-    domain: CognitoDomainProps,
-    client: CognitoClientProps,
-    props: cognito.UserPoolClientOptions,
-    authorizer: CognitoAuthorizerProps
+    readonly cdkId: string,
+    readonly name: string,
+    readonly domain: CognitoDomainProps,
+    readonly client: CognitoClientProps,
+    readonly props: cognito.UserPoolClientOptions,
+    readonly authorizer: CognitoAuthorizerProps
 }
 
 export interface CognitoProps {
-    pool: CognitoPoolProps
+    readonly pool: CognitoPoolProps
 }
 
 export interface OAuth2Props {
-    cognito: CognitoProps
+    readonly cognito: CognitoProps
+}
+
+export interface OASProps {
+    readonly cdkId: string,
+    readonly value: string
 }
 
 export interface ExtraProps {
-    readonly oas?: string,
+    readonly oas?: OASProps,
     readonly cdk?: CDKProps,
     readonly lambda?: LambdaProps,
     readonly apiGateway?: ApiGatewayProps,
