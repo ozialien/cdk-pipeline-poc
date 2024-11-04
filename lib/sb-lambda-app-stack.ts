@@ -65,7 +65,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
                     userPoolName: props.extra.oauth2.cognito.pool.name,
                     signInAliases: { email: true },
                 });
-                const userPoolClient = new cognito.UserPoolClient(this,props.extra.oauth2.cognito.pool.client.name, {
+                const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name, {
                     userPool,
                     generateSecret: true,
                     oAuth: props.extra.oauth2.cognito.pool.props.oAuth
@@ -77,21 +77,31 @@ export class SpringbootApiLambdaStack extends MatsonStack {
                 });
             }
 
-            // API Gateway configuration
-            let apiInformation: apigateway.LambdaRestApiProps = {
-                handler: springBootApiLambdaCdkPoc,
-                proxy: false,
-                deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
-            };
 
-            // If the openapi spec exists add it to the api properties
-            if (props.extra.oas) {
-                Object.assign(apiInformation, {
+
+            let api;
+            let lambdaIntegration = undefined;
+            if (props?.extra?.oas) {
+                api = new apigateway.SpecRestApi(this, 'Api', {
+                    restApiName: props.extra.apiGateway?.name ?? 'MyApi',
+                    // Load OpenAPI definition from file
                     apiDefinition: apigateway.ApiDefinition.fromAsset(props.extra.oas),
+                    deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
                 });
+                // Lambda integration for API methods (if you need to add custom integrations on top of OpenAPI)
+                lambdaIntegration = new apigateway.LambdaIntegration(springBootApiLambdaCdkPoc);
+
+            } else {
+                // API Gateway configuration
+                let apiInformation: apigateway.LambdaRestApiProps = {
+                    handler: springBootApiLambdaCdkPoc,
+                    proxy: false,
+                    deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
+                };
+                api = new apigateway.RestApi(this, props?.extra?.apiGateway?.name ?? '', apiInformation);
             }
-            
-            const api = new apigateway.LambdaRestApi(this, props.extra.apiGateway?.name ?? '', apiInformation);
+
+
 
             this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", { value: api.url });
             this.lambdaFunctionName = new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ?? '' });
@@ -101,14 +111,14 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             const authorizationOptions = props.extra.oauth2
                 ? { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer }
                 : undefined;
-                
-            products.addMethod('GET', undefined, authorizationOptions);
-            products.addMethod('POST', undefined, authorizationOptions);
-            products.addMethod('DELETE', undefined, authorizationOptions);
+
+            products.addMethod('GET', lambdaIntegration, authorizationOptions);
+            products.addMethod('POST', lambdaIntegration, authorizationOptions);
+            products.addMethod('DELETE', lambdaIntegration, authorizationOptions);
 
             const product = products.addResource("{productSku}");
-            product.addMethod('GET', undefined, authorizationOptions);
-            product.addMethod('DELETE', undefined, authorizationOptions);
+            product.addMethod('GET', lambdaIntegration, authorizationOptions);
+            product.addMethod('DELETE', lambdaIntegration, authorizationOptions);
         } else {
             throw new Error("Missing Lambda configuration!");
         }
