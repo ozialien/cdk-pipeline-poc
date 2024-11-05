@@ -15,7 +15,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
 
     @Bean
-    @ConditionalOnProperty(name = "app.security.oath2.enabled", havingValue = "true")
+    @ConditionalOnProperty(name = "app.security.oauth2.enabled", havingValue = "true")
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
@@ -26,7 +26,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "app.security.oath2.enabled", havingValue = "false")
+    @ConditionalOnProperty(name = "app.security.oauth2.enabled", havingValue = "false")
     public SecurityFilterChain securityFilterChainNoAuth(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
