@@ -11,9 +11,11 @@ import com.amazonaws.xray.entities.Segment;
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author amitkapps
@@ -38,15 +40,18 @@ public class StreamLambdaHandler implements RequestStreamHandler {
 
     /**
      * 
-     * Being able to dynamically switch on and off XRay tracing via the api gateway trace header
+     * Being able to dynamically switch on and off XRay tracing via the api gateway
+     * trace header
      * is apparently a cost save.
-     * Even when XRay tracing is switched on in Lambda you can ihitiate a full trace this way.
+     * Even when XRay tracing is switched on in Lambda you can ihitiate a full trace
+     * this way.
      * 
      * Recorded traces: $5 per million traces recorded
      * Retrieved traces: $0.50 per million traces retrieved
      * Scanned traces: $0.50 per million traces scanned
      * X-Ray Insights traces stored: $1 per million traces recorded
-     * Sampling rate: The chosen sampling rate is multiplied by the request or API call rate to estimate costs 
+     * Sampling rate: The chosen sampling rate is multiplied by the request or API
+     * call rate to estimate costs
      * 
      * 
      * @param inputStream
@@ -58,14 +63,17 @@ public class StreamLambdaHandler implements RequestStreamHandler {
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
 
+        ByteArrayOutputStream cachedStream = new ByteArrayOutputStream();
+        inputStream.transferTo(cachedStream);
+        String jsonData = cachedStream.toString(StandardCharsets.UTF_8);
+        System.out.println("Received JSON data: " + jsonData);
+
         // Parse the input stream to access headers
         AwsProxyRequest request = objectMapper.readValue(inputStream, AwsProxyRequest.class);
         String traceHeader = request.getHeaders().get("X-Amzn-Trace-Id");
 
-
-
         Segment segment = null;
-        
+
         if (traceHeader != null) {
             // If tracing header is present, start a new X-Ray segment for this request
             segment = AWSXRay.beginSegment("ProductCatalogService");
@@ -74,6 +82,11 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         try {
             // Forward the request to the handler
             handler.proxyStream(inputStream, outputStream, context);
+        } catch (Exception e) {
+            if (segment != null) {
+                segment.addException(e);
+            }
+            throw e;
         } finally {
             // End the segment if it was started
             if (segment != null) {
