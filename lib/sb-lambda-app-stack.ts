@@ -84,7 +84,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             //
             let api;
             const lambdaIntegration = new apigateway.LambdaIntegration(springBootApiLambdaCdkPoc, {
-                proxy: false,  // Set to true for proxy mode or configure custom integration options if needed
+                proxy: true,  // Set to true for proxy mode or configure custom integration options if needed
             });
             if (props?.extra?.oas) {
                 api = new apigateway.SpecRestApi(this, props?.extra?.oas.cdkId, {
