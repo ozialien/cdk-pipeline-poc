@@ -10,7 +10,7 @@
 
     @Configuration
     @XRayEnabled  // Enables X-Ray tracing across beans in this configuration
-    @ConditionalOnProperty(name = "tracing.enabled", havingValue = "true") 
+    @ConditionalOnProperty(name = "xray.tracing.enabled", havingValue = "true") 
     public class XRayConfig {
 
         @Bean
