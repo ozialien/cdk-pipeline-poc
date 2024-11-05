@@ -24,6 +24,9 @@ public class SecurityConfig {
                 .oauth2Client(withDefaults());
         return http.build();
     }
+/*
+
+Why define it if you don't need it
 
     @Bean
     @ConditionalOnProperty(name = "app.security.oauth2.enabled", havingValue = "false")
@@ -35,4 +38,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+*/
 }
