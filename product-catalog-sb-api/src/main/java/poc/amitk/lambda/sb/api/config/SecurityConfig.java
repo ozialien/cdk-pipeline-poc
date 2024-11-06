@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Configuration
-@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 @EnableWebSecurity(debug = true)
 public class SecurityConfig {
         private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
