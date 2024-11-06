@@ -24,4 +24,16 @@ public class SecurityConfig {
                 .oauth2Client(withDefaults());
         return http.build();
     }
+
+    @Bean
+    @ConditionalOnProperty(name = "app.security.oauth2.enabled", havingValue = "false")
+    public SecurityFilterChain securityFilterChainNoAuth(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // Allow all requests without authentication
+                );
+
+        return http.build();
+    }
+
 }
