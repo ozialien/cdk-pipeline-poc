@@ -73,20 +73,21 @@ public class StreamLambdaHandler implements RequestStreamHandler {
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
-        logger.info(String.format("Entering %s.%s", this.getClass().getName(), methodName));
+        logger.info("Entering {}.{}", this.getClass().getName(), methodName);
 
         ByteArrayOutputStream cachedStream = new ByteArrayOutputStream();
         inputStream.transferTo(cachedStream);
-        String jsonData = cachedStream.toString(StandardCharsets.UTF_8);
-        logger.info(String.format("Received JSON data: %s", jsonData));
-
-        InputStream cachedInputForHandler = new ByteArrayInputStream(jsonData.getBytes());
+        byte[] inputBytes = cachedStream.toByteArray();
+        InputStream cachedInputForHeaders = new ByteArrayInputStream(inputBytes);
+        InputStream cachedInputForHandler = new ByteArrayInputStream(inputBytes);
+        
+        logger.info("Received JSON data: {}", new String(inputBytes, StandardCharsets.UTF_8));
 
         Map<String, Object> requestMap = objectMapper.readValue(
-                jsonData,
+                cachedInputForHeaders,
                 new TypeReference<Map<String, Object>>() {
                 });
-        logger.info(String.format("Parsed Map: %s", requestMap));
+        logger.info("Parsed Map: %{}", requestMap);
 
         ////
         //
@@ -97,7 +98,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         //
         // Deserialization to check proxy requests could fail when AWS upgrades.
         //
-        // AwsProxyRequest request = objectMapper.readValue(inputStream, AwsProxyRequest.class);
+        // AwsProxyRequest request = objectMapper.readValue(cachedInputForHeaders, AwsProxyRequest.class);
         // String traceHeader = request.getHeaders().get("X-Amzn-Trace-Id");
         //
         ////
@@ -105,7 +106,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         @SuppressWarnings("unchecked")
         Map<String, String> headers = (Map<String, String>) requestMap.getOrDefault("headers", null);
         String traceHeader = headers != null ? headers.get("X-Amzn-Trace-Id") : null;
-        logger.info(String.format("X-Amzn-Trace-Id: %s", traceHeader));
+        logger.info("X-Amzn-Trace-Id: {}", traceHeader);
 
         Segment segment = null;
 
@@ -127,7 +128,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             if (segment != null) {
                 AWSXRay.endSegment();
             }
-            logger.info(String.format("Exiting %s.%s", this.getClass().getName(), methodName));
+            logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
 
         }
     }
