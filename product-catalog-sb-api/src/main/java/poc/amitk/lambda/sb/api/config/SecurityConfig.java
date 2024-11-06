@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.method.P;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,8 +32,8 @@ public class SecurityConfig {
         @Value("${app.security.csrf.enabled:false}")
         private boolean enableCsrf;
 
+        // @Lazy(false) // Force eager initialization
         @Bean
-        @Lazy(false) // Force eager initialization
         @Order(1)
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 String methodName = new Exception().getStackTrace()[0].getMethodName();
@@ -42,6 +43,9 @@ public class SecurityConfig {
                         logger.info("Enforcing OAUTH2");
                         http.authorizeHttpRequests(auth -> auth
                                         .requestMatchers("/public/**").permitAll()
+                                        .requestMatchers(HttpMethod.GET, "/products/*").authenticated()
+                                        .requestMatchers(HttpMethod.POST, "/products").authenticated()
+                                        .requestMatchers(HttpMethod.DELETE, "/products/*").authenticated()
                                         .anyRequest().authenticated())
                                         .oauth2Client(withDefaults())
                                         //.csrf(enableCsrf ? withDefaults() : null)
