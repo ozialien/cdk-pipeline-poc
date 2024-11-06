@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.access.method.P;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,7 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Configuration
-@EnableWebSecurity
+@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
+@EnableWebSecurity(debug = true)
 public class SecurityConfig {
         private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
@@ -31,6 +33,7 @@ public class SecurityConfig {
         private boolean enableCsrf;
 
         @Bean
+        @Lazy(false) // Force eager initialization
         @Order(1)
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 String methodName = new Exception().getStackTrace()[0].getMethodName();
@@ -42,14 +45,17 @@ public class SecurityConfig {
                                         .requestMatchers("/public/**").permitAll()
                                         .anyRequest().authenticated())
                                         .oauth2Client(withDefaults())
-                                        .csrf(enableCsrf ? withDefaults() : null);
+                                        //.csrf(enableCsrf ? withDefaults() : null)
+                                        ;
 
                 } else {
-                        logger.info("Switching of OAUTH2");
+                        logger.info("Switching off OAUTH2");
 
                         http.authorizeHttpRequests(auth -> auth
                                         .anyRequest().permitAll() // Allow all requests without authentication
-                        ).csrf(enableCsrf ? withDefaults() : null);
+                        )
+                        //.csrf(enableCsrf ? withDefaults() : null)
+                        ;
                 }
 
                 logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
