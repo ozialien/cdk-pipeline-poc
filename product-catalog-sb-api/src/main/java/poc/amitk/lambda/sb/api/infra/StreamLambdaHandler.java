@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +18,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Segment;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
@@ -80,34 +77,24 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         byte[] inputBytes = cachedStream.toByteArray();
         InputStream cachedInputForHeaders = new ByteArrayInputStream(inputBytes);
         InputStream cachedInputForHandler = new ByteArrayInputStream(inputBytes);
-        
+
         logger.info("Received JSON data: {}", new String(inputBytes, StandardCharsets.UTF_8));
 
-        Map<String, Object> requestMap = objectMapper.readValue(
-                cachedInputForHeaders,
-                new TypeReference<Map<String, Object>>() {
-                });
-        logger.info("Parsed Map: %{}", requestMap);
+        // Map<String, Object> requestMap = objectMapper.readValue(
+        // inputBytes,
+        // new TypeReference<Map<String, Object>>() {
+        // });
+        // logger.info("Parsed Map: %{}", requestMap);
 
-        ////
-        //
-        // There seems to be a spring boot and amazon library dependency
-        // mismatch. Rather than track it down for now just use the
-        // generic Map parse and switch on that. It does raise an important
-        // question though.
-        //
-        // Deserialization to check proxy requests could fail when AWS upgrades.
-        //
-        // AwsProxyRequest request = objectMapper.readValue(cachedInputForHeaders, AwsProxyRequest.class);
-        // String traceHeader = request.getHeaders().get("X-Amzn-Trace-Id");
-        //
-        ////
+        AwsProxyRequest request = objectMapper.readValue(cachedInputForHeaders, AwsProxyRequest.class);
+        String traceHeader = request.getHeaders().getOrDefault("X-Amzn-Trace-Id", null);
 
-        @SuppressWarnings("unchecked")
-        Map<String, String> headers = (Map<String, String>) requestMap.getOrDefault("headers", null);
-        String traceHeader = headers != null ? headers.get("X-Amzn-Trace-Id") : null;
+        // @SuppressWarnings("unchecked")
+        // Map<String, String> headers = (Map<String, String>)
+        // requestMap.getOrDefault("headers", null);
+        // String traceHeader = headers != null ? headers.get("X-Amzn-Trace-Id") : null;
+
         logger.info("X-Amzn-Trace-Id: {}", traceHeader);
-
         Segment segment = null;
 
         if (traceHeader != null) {
