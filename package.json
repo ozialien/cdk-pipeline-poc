@@ -29,7 +29,8 @@
     "codegen:lambda:server:beta": "openapi-generator-cli generate -i oas/product.json -g spring -o codegen/server",
     "codegen:jest:tests:beta": "ts-node ./generate-tests.ts",
     "codegen:postman:tests": "openapi-generator-cli generate -i oas/product.json -g postman-collection -o postman",
-    "doit": "npm run mvn:install && aws s3 cp product-catalog-sb-api/target/product-catalog-sb-api-0.0.1-SNAPSHOT.jar s3://erider/lambdas/product-catalog/product-catalog-sb-api-0.0.1-SNAPSHOT.jar && aws lambda update-function-code --function-name ProductCatalogSbApiLambda --s3-bucket erider --s3-key lambdas/product-catalog/product-catalog-sb-api-0.0.1-SNAPSHOT.jar"
+    "doit": "npm run mvn:install && aws s3 cp product-catalog-sb-api/target/product-catalog-sb-api-0.0.1-SNAPSHOT.jar s3://erider/lambdas/product-catalog/product-catalog-sb-api-0.0.1-SNAPSHOT.jar && aws lambda update-function-code --function-name ProductCatalogSbApiLambda --s3-bucket erider --s3-key lambdas/product-catalog/product-catalog-sb-api-0.0.1-SNAPSHOT.jar",
+    "doitagain": "npm run mvn:install && npm run cdk deploy SpringbootApiLambdaStack"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.15.0",
