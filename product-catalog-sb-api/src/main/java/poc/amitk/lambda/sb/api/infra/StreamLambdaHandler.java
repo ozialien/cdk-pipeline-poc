@@ -67,7 +67,8 @@ public class StreamLambdaHandler implements RequestStreamHandler {
      * @throws IOException
      */
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
+    public void handleRequest(InputStream inputStream, OutputStream outputStream,
+            Context context)
             throws IOException {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
         logger.info("Entering {}.{}", this.getClass().getName(), methodName);
@@ -78,21 +79,13 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         InputStream cachedInputForHeaders = new ByteArrayInputStream(inputBytes);
         InputStream cachedInputForHandler = new ByteArrayInputStream(inputBytes);
 
-        logger.info("Received JSON data: {}", new String(inputBytes, StandardCharsets.UTF_8));
+        logger.info("Received JSON data: {}", new String(inputBytes,
+                StandardCharsets.UTF_8));
 
-        // Map<String, Object> requestMap = objectMapper.readValue(
-        // inputBytes,
-        // new TypeReference<Map<String, Object>>() {
-        // });
-        // logger.info("Parsed Map: %{}", requestMap);
-
-        AwsProxyRequest request = objectMapper.readValue(cachedInputForHeaders, AwsProxyRequest.class);
-        String traceHeader = request.getHeaders().getOrDefault("X-Amzn-Trace-Id", null);
-
-        // @SuppressWarnings("unchecked")
-        // Map<String, String> headers = (Map<String, String>)
-        // requestMap.getOrDefault("headers", null);
-        // String traceHeader = headers != null ? headers.get("X-Amzn-Trace-Id") : null;
+        AwsProxyRequest request = objectMapper.readValue(cachedInputForHeaders,
+                AwsProxyRequest.class);
+        String traceHeader = request.getHeaders().getOrDefault("X-Amzn-Trace-Id",
+                null);
 
         logger.info("X-Amzn-Trace-Id: {}", traceHeader);
         Segment segment = null;
@@ -119,4 +112,17 @@ public class StreamLambdaHandler implements RequestStreamHandler {
 
         }
     }
+
+    // @Override
+    // public void handleRequest(InputStream inputStream, OutputStream outputStream,
+    // Context context)
+    // throws IOException {
+    // String methodName = new Exception().getStackTrace()[0].getMethodName();
+    // logger.info("Entering {}.{}", this.getClass().getName(), methodName);
+    // try {
+    // handler.proxyStream(inputStream, outputStream, context);
+    // } finally {
+    // logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
+    // }
+    // }
 }
