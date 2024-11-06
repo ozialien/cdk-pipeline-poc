@@ -1,5 +1,17 @@
 package poc.amitk.lambda.sb.api.infra;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
@@ -8,14 +20,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Segment;
-import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
 
 /**
  * @author amitkapps
@@ -23,6 +31,8 @@ import java.nio.charset.StandardCharsets;
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    // Create a logger instance
+    private static final Logger logger = LoggerFactory.getLogger(StreamLambdaHandler.class);
 
     static {
         try {
@@ -62,15 +72,40 @@ public class StreamLambdaHandler implements RequestStreamHandler {
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
+        String methodName = new Exception().getStackTrace()[0].getMethodName();
+        logger.info(String.format("Entering %s.%s", this.getClass().getName(), methodName));
 
         ByteArrayOutputStream cachedStream = new ByteArrayOutputStream();
         inputStream.transferTo(cachedStream);
         String jsonData = cachedStream.toString(StandardCharsets.UTF_8);
-        System.out.println("Received JSON data: " + jsonData);
+        logger.info(String.format("Received JSON data: %s", jsonData));
 
-        // Parse the input stream to access headers
-        AwsProxyRequest request = objectMapper.readValue(inputStream, AwsProxyRequest.class);
-        String traceHeader = request.getHeaders().get("X-Amzn-Trace-Id");
+        InputStream cachedInputForHandler = new ByteArrayInputStream(jsonData.getBytes());
+
+        Map<String, Object> requestMap = objectMapper.readValue(
+                jsonData,
+                new TypeReference<Map<String, Object>>() {
+                });
+        logger.info(String.format("Parsed Map: %s", requestMap));
+
+        ////
+        //
+        // There seems to be a spring boot and amazon library dependency
+        // mismatch. Rather than track it down for now just use the
+        // generic Map parse and switch on that. It does raise an important
+        // question though.
+        //
+        // Deserialization to check proxy requests could fail when AWS upgrades.
+        //
+        // AwsProxyRequest request = objectMapper.readValue(inputStream, AwsProxyRequest.class);
+        // String traceHeader = request.getHeaders().get("X-Amzn-Trace-Id");
+        //
+        ////
+
+        @SuppressWarnings("unchecked")
+        Map<String, String> headers = (Map<String, String>) requestMap.getOrDefault("headers", null);
+        String traceHeader = headers != null ? headers.get("X-Amzn-Trace-Id") : null;
+        logger.info(String.format("X-Amzn-Trace-Id: %s", traceHeader));
 
         Segment segment = null;
 
@@ -81,7 +116,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
 
         try {
             // Forward the request to the handler
-            handler.proxyStream(inputStream, outputStream, context);
+            handler.proxyStream(cachedInputForHandler, outputStream, context);
         } catch (Exception e) {
             if (segment != null) {
                 segment.addException(e);
@@ -92,6 +127,8 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             if (segment != null) {
                 AWSXRay.endSegment();
             }
+            logger.info(String.format("Exiting %s.%s", this.getClass().getName(), methodName));
+
         }
     }
 }
