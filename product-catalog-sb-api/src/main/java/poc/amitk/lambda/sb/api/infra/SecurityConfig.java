@@ -1,31 +1,19 @@
 package poc.amitk.lambda.sb.api.infra;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.access.method.P;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.config.Customizer;
-
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//@AutoConfigureAfter(SecurityAutoConfiguration.class)
-@Configuration  
+@Configuration
 @EnableWebSecurity(debug = true)
 public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
@@ -36,12 +24,11 @@ public class SecurityConfig {
     @Value("${app.security.csrf.enabled:false}")
     private boolean enableCsrf;
 
-
     @Value("${security.oauth2.resource.jwk.key-set-uri:''}")
     private String jwkUri;
 
     // @Lazy(false) // Force eager initialization
-    @Bean    
+    @Bean
     @Order(1)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
@@ -54,7 +41,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/products/*").authenticated()
                     .requestMatchers(HttpMethod.POST, "/products").authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/products/*").authenticated()
-                    .anyRequest().authenticated())                
+                    .anyRequest().authenticated())
                     .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
 
         } else {
