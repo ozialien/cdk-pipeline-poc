@@ -46,51 +46,53 @@ const Context: ExtendedProps = {
         //
         // Don't setup the cdk to generate cognito OAuth2 client
         // 
-        // oauth2:
-        // {
-        //     cognito: {
-        //         pool: {
-        //             cdkId: 'OProductCatalogOAuth2UserPool',
-        //             name: 'PCOAuth2UserPool',
-        //             authorizer: {
-        //                 cdkId: 'CognitoAuthorizer'
-        //             },
-        //             domain: {
-        //                 cdkId: 'UserPoolDomain',
-        //                 prefix: 'demo-oauth2'
-        //             },
-        //             client: {
-        //                 name: 'DemoAppClient'
-        //             },
-        //             props: {
-        //                 generateSecret: false, // Set to true if you need a client secret
-        //                 authFlows: {
-        //                     userPassword: true,
-        //                 },
-        //                 oAuth: {
-        //                     flows: {
-        //                         authorizationCodeGrant: true, // Enable authorization code flow
-        //                         implicitCodeGrant: true, // Enable implicit flow (for SPA if needed)
-        //                     },
-        //                     scopes: [
-        //                         cognito.OAuthScope.OPENID,
-        //                         cognito.OAuthScope.EMAIL,
-        //                         cognito.OAuthScope.PROFILE,
-        //                     ]
-        //                     /*
-        //                     ,
-        //                     callbackUrls: [
-        //                         'https://www.yourapp.com/callback', // Replace with your app's callback URL
-        //                     ],
-        //                     logoutUrls: [
-        //                         'https://www.yourapp.com/logout', // Replace with your app's logout URL
-        //                     ], */
-        //                 }
-        //             },
+        oauth2:
+        {
+            cognito: {
+                enable: false,
+                enableClient: false,                
+                pool: {
+                    cdkId: 'OProductCatalogOAuth2UserPool',
+                    name: 'PCOAuth2UserPool',
+                    authorizer: {
+                        cdkId: 'CognitoAuthorizer'
+                    },
+                    domain: {
+                        cdkId: 'UserPoolDomain',
+                        prefix: 'demo-oauth2'
+                    },
+                    client: {
+                        name: 'DemoAppClient'
+                    },
+                    props: {
+                        generateSecret: false, // Set to true if you need a client secret
+                        authFlows: {
+                            userPassword: true,
+                        },
+                        oAuth: {
+                            flows: {
+                                authorizationCodeGrant: true, // Enable authorization code flow
+                                implicitCodeGrant: true, // Enable implicit flow (for SPA if needed)
+                            },
+                            scopes: [
+                                cognito.OAuthScope.OPENID,
+                                cognito.OAuthScope.EMAIL,
+                                cognito.OAuthScope.PROFILE,
+                            ]
+                            /*
+                            ,
+                            callbackUrls: [
+                                'https://www.yourapp.com/callback', // Replace with your app's callback URL
+                            ],
+                            logoutUrls: [
+                                'https://www.yourapp.com/logout', // Replace with your app's logout URL
+                            ], */
+                        }
+                    },
 
-        //         }
-        //     }
-        // }
+                }
+            }
+        }
     }
 }
 

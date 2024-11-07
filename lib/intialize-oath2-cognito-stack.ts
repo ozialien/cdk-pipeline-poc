@@ -17,7 +17,7 @@ export class InitializeCognitoOAuth2Stack extends MatsonStack {
                     // An attempt to enable mutiple oauth2 providers
                     //
                     //props?.extra?.oauth2.forEach(auth => {
-                    if (auth.cognito) {
+                    if (auth.cognito?.enable) {
                         // Create a Cognito User Pool
                         const userPool = new cognito.UserPool(this, auth.cognito.pool.cdkId, {
                             userPoolName: auth.cognito?.pool.name,
@@ -34,19 +34,20 @@ export class InitializeCognitoOAuth2Stack extends MatsonStack {
                                 domainPrefix: auth.cognito.pool.domain.prefix,
                             },
                         });
-
-                        // Create an App Client
-                        const userPoolClient = new cognito.UserPoolClient(this, auth.cognito.pool.client.name, {
-                            userPool,
-                            generateSecret: auth.cognito.pool.props.generateSecret, // Set to true if you need a client secret
-                            authFlows: auth.cognito.pool.props.authFlows,
-                            oAuth: auth.cognito.pool.props.oAuth
-                        });
+                        if (auth.cognito?.enableClient) {
+                            // Create an App Client
+                            const userPoolClient = new cognito.UserPoolClient(this, auth.cognito.pool.client.name, {
+                                userPool,
+                                generateSecret: auth.cognito.pool.props.generateSecret, // Set to true if you need a client secret
+                                authFlows: auth.cognito.pool.props.authFlows,
+                                oAuth: auth.cognito.pool.props.oAuth
+                            });
+                            new cdk.CfnOutput(this, 'AppClientId', { value: userPoolClient.userPoolClientId });
+                        }
 
                         // Outputs
                         new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
-                        new cdk.CfnOutput(this, 'UserPoolArn', { value: userPool.userPoolArn });
-                        new cdk.CfnOutput(this, 'AppClientId', { value: userPoolClient.userPoolClientId });
+                        new cdk.CfnOutput(this, 'UserPoolArn', { value: userPool.userPoolArn });                        
                         new cdk.CfnOutput(this, 'HostedUIDomain', {
                             value: userPoolDomain.domainName,
                         });

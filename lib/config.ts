@@ -43,7 +43,7 @@ export interface CognitoAuthorizerProps {
 }
 
 export interface CognitoPoolProps {
-    readonly cdkId: string,
+    readonly cdkId: string,    
     readonly name: string,
     readonly domain: CognitoDomainProps,
     readonly client: CognitoClientProps,
@@ -52,10 +52,13 @@ export interface CognitoPoolProps {
 }
 
 export interface CognitoProps {
+    readonly enable: boolean,
+    readonly enableClient: boolean,
     readonly pool: CognitoPoolProps
 }
 
 export interface OAuth2Props {
+    
     readonly cognito: CognitoProps
 }
 

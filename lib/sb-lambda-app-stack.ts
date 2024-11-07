@@ -59,7 +59,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
 
             // Conditional OAuth2 setup
             let authorizer;
-            if (props.extra.oauth2?.cognito) {
+            if (props.extra.oauth2?.cognito?.enable) {
                 // Cognito User Pool and App Client
                 const userPool = new cognito.UserPool(this, props.extra.oauth2.cognito.pool.cdkId, {
                     userPoolName: props.extra.oauth2.cognito.pool.name,
