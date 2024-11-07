@@ -1,4 +1,4 @@
-    package poc.amitk.lambda.sb.api.config;
+    package poc.amitk.lambda.sb.api.infra;
 
     import com.amazonaws.xray.AWSXRay;
     import com.amazonaws.xray.AWSXRayRecorder;
