@@ -33,27 +33,29 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
         logger.info("Entering {}.{}", this.getClass().getName(), methodName);
+        try {
+            if (oauth2Enabled) {
+                logger.info("Enforcing OAUTH2");
+                http.authorizeHttpRequests(auth -> auth                        
+                        // .requestMatchers(HttpMethod.GET, "/products").authenticated()
+                        // .requestMatchers(HttpMethod.DELETE, "/products").authenticated()
+                        // .requestMatchers(HttpMethod.GET, "/products/*").authenticated()
+                        // .requestMatchers(HttpMethod.POST, "/products").authenticated()
+                        // .requestMatchers(HttpMethod.DELETE, "/products/*").authenticated()
+                        .anyRequest().authenticated())
+                        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
 
-        if (oauth2Enabled) {
-            logger.info("Enforcing OAUTH2");
-            http.authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/public/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/products").authenticated()
-                    .requestMatchers(HttpMethod.DELETE, "/products").authenticated()
-                    .requestMatchers(HttpMethod.GET, "/products/*").authenticated()
-                    .requestMatchers(HttpMethod.POST, "/products").authenticated()                    
-                    .requestMatchers(HttpMethod.DELETE, "/products/*").authenticated()
-                    .anyRequest().authenticated())
-                    .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
+            } else {
+                logger.info("Switching off OAUTH2");
 
-        } else {
-            logger.info("Switching off OAUTH2");
-
-            http.authorizeHttpRequests(auth -> auth
-                    .anyRequest().permitAll() // Allow all requests without authentication
-            );
+                http.authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // Allow all requests without authentication
+                );
+            }
+        } catch (Exception e) {
+            logger.error("Exception: ", e);
+            throw e;
         }
-
         return http.build();
 
     }
