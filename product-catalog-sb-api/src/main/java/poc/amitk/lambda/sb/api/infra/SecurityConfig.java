@@ -7,6 +7,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -26,7 +32,7 @@ public class SecurityConfig {
     @Value("${security.oauth2.resource.jwk.key-set-uri:''}")
     private String jwkUri;
 
-    @Bean   
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
         logger.info("Entering {}.{}", this.getClass().getName(), methodName);
@@ -34,13 +40,12 @@ public class SecurityConfig {
             if (oauth2Enabled) {
                 logger.info("Enforcing OAUTH2");
                 http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/products").hasAuthority("SCOPE_catalog/read")
+                        .requestMatchers(HttpMethod.GET, "/products").authenticated()// .hasAuthority("SCOPE_catalog/read")
                         .requestMatchers(HttpMethod.DELETE, "/products").hasAuthority("SCOPE_catalog/update")
                         .requestMatchers(HttpMethod.GET, "/products/*").hasAuthority("SCOPE_catalog/read")
                         .requestMatchers(HttpMethod.POST, "/products").hasAuthority("SCOPE_catalog/update")
                         .requestMatchers(HttpMethod.DELETE, "/products/*").hasAuthority("SCOPE_catalog/update")
-                        //.anyRequest().authenticated()
-                        )
+                        .anyRequest().authenticated())
                         .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
 
             } else {
@@ -80,4 +85,26 @@ public class SecurityConfig {
         logger.info("claims {}", claims);
         return claims;
     }
+    /*
+     * @Bean
+     * public OAuth2AuthorizedClientManager authorizedClientManager(
+     * ClientRegistrationRepository clientRegistrationRepository,
+     * OAuth2AuthorizedClientRepository authorizedClientRepository) {
+     * String methodName = new Exception().getStackTrace()[0].getMethodName();
+     * logger.info("Entering {}.{}", this.getClass().getName(), methodName);
+     * 
+     * OAuth2AuthorizedClientProvider authorizedClientProvider =
+     * OAuth2AuthorizedClientProviderBuilder.builder()
+     * .password()
+     * .build();
+     * 
+     * DefaultOAuth2AuthorizedClientManager authorizedClientManager = new
+     * DefaultOAuth2AuthorizedClientManager(
+     * clientRegistrationRepository, authorizedClientRepository);
+     * authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider)
+     * ;
+     * logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
+     * return authorizedClientManager;
+     * }
+     */
 }
