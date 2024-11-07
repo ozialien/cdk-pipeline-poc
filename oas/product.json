@@ -959,6 +959,7 @@
         "flows": {
           "password": {
             "tokenUrl": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_5NdzOUXZd/.well-known/jwks.json",
+            "refreshUrl": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_5NdzOUXZd/.well-known/jwks.json",
             "scopes": {
               "catalog/update": "Add or update items in the product catalog",
               "catalog/read": "Get details of the items in the product catalog"
