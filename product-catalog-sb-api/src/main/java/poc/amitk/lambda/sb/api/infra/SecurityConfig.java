@@ -39,7 +39,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/products/*").hasAuthority("SCOPE_catalog/read")
                         .requestMatchers(HttpMethod.POST, "/products").hasAuthority("SCOPE_catalog/update")
                         .requestMatchers(HttpMethod.DELETE, "/products/*").hasAuthority("SCOPE_catalog/update")
-                        .anyRequest().authenticated())
+                        //.anyRequest().authenticated())
                         .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
 
             } else {
