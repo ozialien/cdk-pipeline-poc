@@ -38,8 +38,10 @@ public class SecurityConfig {
             logger.info("Enforcing OAUTH2");
             http.authorizeHttpRequests(auth -> auth
                     .requestMatchers("/public/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/products").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/products").authenticated()
                     .requestMatchers(HttpMethod.GET, "/products/*").authenticated()
-                    .requestMatchers(HttpMethod.POST, "/products").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/products").authenticated()                    
                     .requestMatchers(HttpMethod.DELETE, "/products/*").authenticated()
                     .anyRequest().authenticated())
                     .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
@@ -58,10 +60,14 @@ public class SecurityConfig {
 
     @Bean
     public NimbusJwtDecoder jwtDecoder() {
+        String methodName = new Exception().getStackTrace()[0].getMethodName();
+        logger.info("Entering {}.{}", this.getClass().getName(), methodName);
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder
                 .withJwkSetUri(jwkUri)
                 .build();
+
         jwtDecoder.setClaimSetConverter(this::convertClaims);
+        logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
         return jwtDecoder;
     }
 
