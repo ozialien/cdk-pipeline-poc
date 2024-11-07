@@ -70,11 +70,6 @@
             "ProductTokenAuth": [
               "catalog/read"
             ]
-          },
-          {
-            "ProductAuth": [
-              "catalog/update"
-            ]
           }
         ]
       },
@@ -163,11 +158,6 @@
           },
           {
             "ProductTokenAuth": [
-              "catalog/read"
-            ]
-          },
-          {
-            "ProductAuth": [
               "catalog/read"
             ]
           }
@@ -963,24 +953,17 @@
       }
     },
     "securitySchemes": {
-      "ProductAuth": {
-        "type": "oauth2",
-        "description": "RFC8725 is supported",
-        "flows": {
-          "implicit": {
-            "authorizationUrl": "https://demo-oauth2.auth.us-west-2.amazoncognito.com/oauth2/authorize",
-            "refreshUrl": "https://demo-oauth2.auth.us-west-2.amazoncognito.com/oauth2/authorize",
-            "scopes": {
-              "catalog/update": "Add or update items in the product catalog",
-              "catalog/read": "Get details of the items in the product catalog"
-            }
-          }
-        }
-      },
       "ProductTokenAuth": {
         "type": "oauth2",
         "description": "RFC8725 is supported",
         "flows": {
+          "password": {
+            "tokenUrl": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_5NdzOUXZd/.well-known/jwks.json",
+            "scopes": {
+              "catalog/update": "Add or update items in the product catalog",
+              "catalog/read": "Get details of the items in the product catalog"
+            }
+          },
           "clientCredentials": {
             "tokenUrl": "/token",
             "refreshUrl": "/token?refresh",
@@ -1004,9 +987,6 @@
     },
     {
       "ProductTokenAuth": []
-    },
-    {
-      "ProductAuth": []
     }
   ]
 }
