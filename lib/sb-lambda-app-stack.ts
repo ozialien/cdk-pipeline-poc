@@ -59,25 +59,45 @@ export class SpringbootApiLambdaStack extends MatsonStack {
 
             // Conditional OAuth2 setup
             let authorizer;
+            let userPool: cognito.IUserPool | undefined = undefined;
             if (props.extra.oauth2?.cognito?.enable) {
                 // Cognito User Pool and App Client
-                const userPool = new cognito.UserPool(this, props.extra.oauth2.cognito.pool.cdkId, {
+                userPool = new cognito.UserPool(this, props.extra.oauth2.cognito.pool.cdkId, {
                     userPoolName: props.extra.oauth2.cognito.pool.name,
                     signInAliases: { email: true },
                 });
-                const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name, {
-                    userPool,
-                    generateSecret: true,
-                    oAuth: props.extra.oauth2.cognito.pool.props.oAuth
+                // Define a Domain for Hosted UI
+                const userPoolDomain = userPool.addDomain(props.extra.oauth2.cognito.pool.domain.cdkId, {
+                    cognitoDomain: {
+                        domainPrefix: props.extra.oauth2.cognito.pool.domain.prefix,
+                    },
                 });
+                new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
+                new cdk.CfnOutput(this, 'UserPoolArn', { value: userPool.userPoolArn });
+                new cdk.CfnOutput(this, 'HostedUIDomain', {
+                    value: userPoolDomain.domainName,
+                });
+            }
+
+            if (props.extra.oauth2?.cognito?.enableClient) {
+                let userPoolID: string;
+
+                if (!userPool) {
+                    userPool = cognito.UserPool.fromUserPoolArn(this, 'ImportedUserPool', userPoolID = props.extra.oauth2?.cognito?.pool.arn);
+                }
+                const poolProps: cognito.UserPoolClientProps = {
+                    userPool: userPool,
+                    ...props.extra.oauth2.cognito.pool.props
+                };
+                const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name,poolProps);
 
                 // Cognito Authorizer
                 authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.cdkId, {
                     cognitoUserPools: [userPool],
                 });
+
+                new cdk.CfnOutput(this, 'AppClientId', { value: userPoolClient.userPoolClientId });
             }
-
-
             ////
             //
             // CDK is very confused and hard to follow in this area.  There are multiple ways to do the same thing.
@@ -92,7 +112,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
                     // Load OpenAPI definition from file
                     apiDefinition: apigateway.ApiDefinition.fromAsset(props.extra.oas.value),
                     deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
-                });               
+                });
             } else {
                 // Configure non-OpenAPI API Gateway
                 api = new apigateway.RestApi(this, props.extra.apiGateway?.name ?? '', {
@@ -105,7 +125,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
 
             // Define the '/products' resource with conditional OAuth2 authorization
             const products = api.root.addResource('products');
-            const authorizationOptions = props.extra.oauth2
+            const authorizationOptions = props.extra.oauth2?.cognito?.enableClient
                 ? { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer }
                 : undefined;
 

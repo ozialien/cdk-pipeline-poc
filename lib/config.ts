@@ -44,6 +44,7 @@ export interface CognitoAuthorizerProps {
 
 export interface CognitoPoolProps {
     readonly cdkId: string,    
+    readonly arn: string,
     readonly name: string,
     readonly domain: CognitoDomainProps,
     readonly client: CognitoClientProps,

@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
-import { CdkPipilinePocStack } from '../lib/cdk-pipiline-poc-stack';
 import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { InitializeCognitoOAuth2Stack } from '../lib/intialize-oath2-cognito-stack';
 import { ExtendedProps } from '../lib/config';
 import { SpringbootApiLambdaStack } from '../lib/sb-lambda-app-stack';
 
@@ -41,7 +39,7 @@ const Context: ExtendedProps = {
             },
             memory: 2048,
             xrayEnabled: true
-        },       
+        },
         ////
         //
         // Don't setup the cdk to generate cognito OAuth2 client
@@ -50,9 +48,10 @@ const Context: ExtendedProps = {
         {
             cognito: {
                 enable: false,
-                enableClient: false,                
+                enableClient: false,
                 pool: {
                     cdkId: 'OProductCatalogOAuth2UserPool',
+                    arn: '',
                     name: 'PCOAuth2UserPool',
                     authorizer: {
                         cdkId: 'CognitoAuthorizer'
@@ -112,12 +111,6 @@ const app = new cdk.App();
  * 
  **/
 new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', Context);
-
-
-/**
- * Setup Cognito
- */
-new InitializeCognitoOAuth2Stack(app, "InitializeCognitoOAuth2Stack", Context)
 
 /**
  * 
