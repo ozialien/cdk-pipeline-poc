@@ -27,7 +27,6 @@ public class SecurityConfig {
     @Value("${security.oauth2.resource.jwk.key-set-uri:''}")
     private String jwkUri;
 
-    // @Lazy(false) // Force eager initialization
     @Bean
     @Order(1)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,12 +35,12 @@ public class SecurityConfig {
         try {
             if (oauth2Enabled) {
                 logger.info("Enforcing OAUTH2");
-                http.authorizeHttpRequests(auth -> auth                        
-                        // .requestMatchers(HttpMethod.GET, "/products").authenticated()
-                        // .requestMatchers(HttpMethod.DELETE, "/products").authenticated()
-                        // .requestMatchers(HttpMethod.GET, "/products/*").authenticated()
-                        // .requestMatchers(HttpMethod.POST, "/products").authenticated()
-                        // .requestMatchers(HttpMethod.DELETE, "/products/*").authenticated()
+                http.authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/products").hasAuthority("SCOPE_catalog/read")
+                        .requestMatchers(HttpMethod.DELETE, "/products").hasAuthority("SCOPE_catalog/update")
+                        .requestMatchers(HttpMethod.GET, "/products/*").hasAuthority("SCOPE_catalog/read")
+                        .requestMatchers(HttpMethod.POST, "/products").hasAuthority("SCOPE_catalog/update")
+                        .requestMatchers(HttpMethod.DELETE, "/products/*").hasAuthority("SCOPE_catalog/update")
                         .anyRequest().authenticated())
                         .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
 
@@ -68,7 +67,7 @@ public class SecurityConfig {
                 .withJwkSetUri(jwkUri)
                 .build();
 
-        jwtDecoder.setClaimSetConverter(this::convertClaims);
+        // jwtDecoder.setClaimSetConverter(this::convertClaims);
         logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
         return jwtDecoder;
     }
