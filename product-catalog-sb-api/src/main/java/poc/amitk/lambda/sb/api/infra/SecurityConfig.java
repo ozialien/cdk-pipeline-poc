@@ -3,7 +3,6 @@ package poc.amitk.lambda.sb.api.infra;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -27,8 +26,7 @@ public class SecurityConfig {
     @Value("${security.oauth2.resource.jwk.key-set-uri:''}")
     private String jwkUri;
 
-    @Bean
-    @Order(1)
+    @Bean   
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
         logger.info("Entering {}.{}", this.getClass().getName(), methodName);
