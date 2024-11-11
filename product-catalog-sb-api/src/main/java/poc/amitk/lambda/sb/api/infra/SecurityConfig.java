@@ -98,13 +98,6 @@ public class SecurityConfig {
             if (oauth2Enabled) {
                 logger.info("Enforcing OAUTH2");
                 http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/products")
-                        .hasAnyAuthority("SCOPE_aws.cognito.signin.user.admin", "SCOPE_catalog/update")
-                        .requestMatchers(HttpMethod.DELETE, "/products").hasAuthority("SCOPE_catalog/update")
-                        .requestMatchers(HttpMethod.GET, "/products/*")
-                        .hasAnyAuthority("SCOPE_catalog/read", "SCOPE_catalog/update")
-                        .requestMatchers(HttpMethod.POST, "/products").hasAuthority("SCOPE_catalog/update")
-                        .requestMatchers(HttpMethod.DELETE, "/products/*").hasAuthority("SCOPE_catalog/update")
                         .anyRequest().authenticated())
                         .oauth2ResourceServer(
                                 oauth2 -> oauth2.jwt(
