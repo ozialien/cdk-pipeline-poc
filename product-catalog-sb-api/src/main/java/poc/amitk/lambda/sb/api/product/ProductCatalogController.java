@@ -20,32 +20,32 @@ public class ProductCatalogController {
     private ProductService productService;
 
     @GetMapping("")
-    @PreAuthorize("hasAuthority('SCOPE_aws.cognito.signin.user.admin') or hasAuthority('SCOPE_catalog/read') or hasAuthority('SCOPE_catalog/update')")
+    @PreAuthorize("hasAuthority('aws.cognito.signin.user.admin') or hasAuthority('catalog/read') or hasAuthority('catalog/update')")
     public List<Product> getProducts() {
         return productService.getAllProducts();
     }
 
     @GetMapping("/{productSku}")
-    @PreAuthorize("hasAuthority('SCOPE_catalog/read') or hasAuthority('SCOPE_catalog/update')")
+    @PreAuthorize("hasAuthority('catalog/read') or hasAuthority('catalog/update')")
     public Product getProductById(@PathVariable String productSku) {
         return productService.getProductBySku(productSku);
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAuthority('SCOPE_aws.cognito.signin.user.admin') or hasAuthority('SCOPE_catalog/update')")
+    @PreAuthorize("hasAuthority('aws.cognito.signin.user.admin') or hasAuthority('catalog/update')")
     public Product saveProduct(@RequestBody Product product) {
         logger.info("request to add product to catalog: {}", product);
         return productService.addProductToCatalog(product);
     }
 
     @DeleteMapping("/{productSku}")
-    @PreAuthorize("hasAuthority('SCOPE_aws.cognito.signin.user.admin') or hasAuthority('SCOPE_catalog/update')")
+    @PreAuthorize("hasAuthority('aws.cognito.signin.user.admin') or hasAuthority('catalog/update')")
     public void removeProduct(@PathVariable String productSku) {
         productService.removeProductFromCatalog(productSku);
     }
 
     @DeleteMapping("")
-    @PreAuthorize("hasAuthority('SCOPE_aws.cognito.signin.user.admin') or hasAuthority('SCOPE_catalog/update')")
+    @PreAuthorize("hasAuthority('aws.cognito.signin.user.admin') or hasAuthority('catalog/update')")
     public void removeAllProducts() {
         productService.removeAllProductsFromCatalog();
     }
