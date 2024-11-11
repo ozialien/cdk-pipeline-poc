@@ -8,7 +8,15 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +24,21 @@ import org.slf4j.LoggerFactory;
 @EnableWebSecurity(debug = true)
 public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
+    /** 
+     * 
+     * Only really needed if your mapping scopes.
+     *  
+     **/    
+    public class CustomJwtAuthenticationConverter extends JwtAuthenticationConverter {
+
+        public CustomJwtAuthenticationConverter() {
+            JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+            grantedAuthoritiesConverter.setAuthorityPrefix("SCOPE_");
+            grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities"); // Use the custom claim "authorities"
+            setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        }
+    }
 
     @Value("${app.security.oauth2.enabled:false}")
     public boolean oauth2Enabled;
@@ -34,9 +57,11 @@ public class SecurityConfig {
             if (oauth2Enabled) {
                 logger.info("Enforcing OAUTH2");
                 http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/products").authenticated()// .hasAuthority("SCOPE_catalog/read")
+                        .requestMatchers(HttpMethod.GET, "/products")
+                        .hasAnyAuthority("SCOPE_catalog/read", "SCOPE_catalog/update")
                         .requestMatchers(HttpMethod.DELETE, "/products").hasAuthority("SCOPE_catalog/update")
-                        .requestMatchers(HttpMethod.GET, "/products/*").hasAuthority("SCOPE_catalog/read")
+                        .requestMatchers(HttpMethod.GET, "/products/*")
+                        .hasAnyAuthority("SCOPE_catalog/read", "SCOPE_catalog/update")
                         .requestMatchers(HttpMethod.POST, "/products").hasAuthority("SCOPE_catalog/update")
                         .requestMatchers(HttpMethod.DELETE, "/products/*").hasAuthority("SCOPE_catalog/update")
                         .anyRequest().authenticated())
@@ -44,8 +69,10 @@ public class SecurityConfig {
                                 oauth2 -> oauth2.jwt(
                                         jwt -> {
                                             jwt.decoder(jwtDecoder());
-                                            //jwt.jwkSetUri(this.jwkUri);
+                                            // jwt.jwkSetUri(this.jwkUri);
+                                            jwt.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter());
                                         }));
+                                        
 
             } else {
                 logger.info("Switching off OAUTH2");
@@ -70,7 +97,7 @@ public class SecurityConfig {
                 .withJwkSetUri(jwkUri)
                 .build();
 
-        // jwtDecoder.setClaimSetConverter(this::convertClaims);
+        jwtDecoder.setClaimSetConverter(this::convertClaims);
         logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
         return jwtDecoder;
     }
@@ -82,6 +109,24 @@ public class SecurityConfig {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
         logger.info("Entering {}.{}", this.getClass().getName(), methodName);
         logger.info("claims {}", claims);
+
+        if (claims.containsKey("scope")) {
+            String scopes = (String) claims.get("scope");
+            List<String> authorities = Arrays.stream(scopes.split(" ")).map(
+                    scope -> {
+                        if (scope.equals("aws.cognito.signin.user.admin")) {
+                            return "SCOPE_catalog/update";
+                        } else {
+                            return scope;
+                        }
+
+                    }).collect(Collectors.toList());
+            claims.put("authorities", authorities);
+            logger.info("post processing claims {}", claims);
+        }
+
+        logger.info("Entering {}.{}", this.getClass().getName(), methodName);
+
         return claims;
     }
 }
