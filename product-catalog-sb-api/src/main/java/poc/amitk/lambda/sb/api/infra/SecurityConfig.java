@@ -99,7 +99,7 @@ public class SecurityConfig {
                 logger.info("Enforcing OAUTH2");
                 http.authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/products")
-                        .hasAnyAuthority("SCOPE_catalog/read", "SCOPE_catalog/update")
+                        .hasAnyAuthority("SCOPE_aws.cognito.signin.user.admin", "SCOPE_catalog/update")
                         .requestMatchers(HttpMethod.DELETE, "/products").hasAuthority("SCOPE_catalog/update")
                         .requestMatchers(HttpMethod.GET, "/products/*")
                         .hasAnyAuthority("SCOPE_catalog/read", "SCOPE_catalog/update")
@@ -116,17 +116,17 @@ public class SecurityConfig {
                                             // In the case you have multiple providers some map and some don't
                                             // you will also do this.
                                             //
-                                            NimbusJwtDecoder decoder = jwtDecoder();
-                                            decoder.setClaimSetConverter(this::convertClaims);
-                                            decoder.setJwtValidator(new CustomJwtValidator());                                            
-                                            jwt.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter());
-                                            jwt.decoder(decoder);
-                                            ////
+                                            // NimbusJwtDecoder decoder = jwtDecoder();
+                                            // decoder.setClaimSetConverter(this::convertClaims);
+                                            // decoder.setJwtValidator(new CustomJwtValidator());                                            
+                                            // jwt.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter());
+                                            // jwt.decoder(decoder);
+                                            // ////
                                             //
                                             // If your OAuth2 provider uses your scopes then just do the following.
                                             //
                                             //
-                                            // jwt.jwkSetUri(this.jwkUri);
+                                            jwt.jwkSetUri(this.jwkUri);
                                         }));
 
             } else {
