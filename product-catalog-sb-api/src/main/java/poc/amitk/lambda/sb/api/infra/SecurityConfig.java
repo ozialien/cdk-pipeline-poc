@@ -10,9 +10,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,23 +25,58 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This demo's how to map from a 3rd party auth to your local service scopes. In general if you authority supports your scopes
+ * you only need to configure:
+ * 
+ * jwt.jwkSetUri(this.jwkUri);
+ * 
+ * This is very different for different versions of spring.  e.g. the latest implementations do it differently again.
+ * 
+ */
 @Configuration
 @EnableWebSecurity(debug = true)
 public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
-    /** 
+    /**
      * 
      * Only really needed if your mapping scopes.
-     *  
-     **/    
+     * 
+     **/
     public class CustomJwtAuthenticationConverter extends JwtAuthenticationConverter {
 
-        public CustomJwtAuthenticationConverter() {
+        private CustomJwtAuthenticationConverter() {
             JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
             grantedAuthoritiesConverter.setAuthorityPrefix("SCOPE_");
             grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities"); // Use the custom claim "authorities"
-            setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+            setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);            
+        }
+
+    }
+
+    /**
+     * We redefine the standard Scope in mapping so we have to validate it from its
+     * different location
+     * Merely decrypting the token and finding authorities is the authentication.
+     */
+    public class CustomJwtValidator implements OAuth2TokenValidator<Jwt> {
+
+        @Override
+        public OAuth2TokenValidatorResult validate(Jwt jwt) {
+            String methodName = new Exception().getStackTrace()[0].getMethodName();
+            logger.info("Entering {}.{}", this.getClass().getName(), methodName);
+            logger.info("claims {}", jwt.getClaims());
+      
+            // Example: Custom validation for specific claim presence
+            if (!jwt.hasClaim("authorities")) {
+                List<OAuth2Error> errors = new ArrayList<OAuth2Error>();
+                errors.add(new OAuth2Error("The required 'authorities' claim is missing."));
+                logger.info("Erroring {}.{}", this.getClass().getName(), methodName);
+                return OAuth2TokenValidatorResult.failure(errors);
+            }
+            logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
+            return OAuth2TokenValidatorResult.success();
         }
     }
 
@@ -68,11 +108,22 @@ public class SecurityConfig {
                         .oauth2ResourceServer(
                                 oauth2 -> oauth2.jwt(
                                         jwt -> {
-                                            jwt.decoder(jwtDecoder());
-                                            // jwt.jwkSetUri(this.jwkUri);
+                                            ////
+                                            //
+                                            // If your OAuth2 provider uses its own scopes or roles then
+                                            // you will have to do a variation of this.
+                                            // In the case you have multiple providers some map and some don't
+                                            // you will also do this.                                        
+                                            //
+                                            jwt.decoder(jwtDecoder());                                            
                                             jwt.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter());
+                                            ////
+                                            //
+                                            // If your OAuth2 provider uses your scopes then just do the following.
+                                            // 
+                                            //
+                                            // jwt.jwkSetUri(this.jwkUri);
                                         }));
-                                        
 
             } else {
                 logger.info("Switching off OAUTH2");
@@ -98,6 +149,7 @@ public class SecurityConfig {
                 .build();
 
         jwtDecoder.setClaimSetConverter(this::convertClaims);
+        jwtDecoder.setJwtValidator(new CustomJwtValidator());
         logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
         return jwtDecoder;
     }
@@ -106,27 +158,31 @@ public class SecurityConfig {
         // Map specific claims if needed; e.g., convert Cognito roles to Spring Security
         // roles
         // Here you might need to map roles from a Cognito-specific claim
+        Map<String, Object> modifiableClaims = new HashMap<>(claims);
         String methodName = new Exception().getStackTrace()[0].getMethodName();
         logger.info("Entering {}.{}", this.getClass().getName(), methodName);
         logger.info("claims {}", claims);
+        try {
+            if (claims.containsKey("scope")) {
+                String scope = (String) claims.get("scope");
+                List<String> scopes = Arrays.asList(scope.split(" "));
+                logger.info("scopes {}", scopes);
+                if (scopes.size() > 0) {
+                    List<String> authorities = scopes.stream().map(
+                            s -> s.equals("aws.cognito.signin.user.admin") ? "SCOPE_catalog/update" : s)
+                            .collect(Collectors.toList());
 
-        if (claims.containsKey("scope")) {
-            String scopes = (String) claims.get("scope");
-            List<String> authorities = Arrays.stream(scopes.split(" ")).map(
-                    scope -> {
-                        if (scope.equals("aws.cognito.signin.user.admin")) {
-                            return "SCOPE_catalog/update";
-                        } else {
-                            return scope;
-                        }
+                    logger.info("authorities {}", authorities);
+                    modifiableClaims.put("authorities", authorities);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error", e);
 
-                    }).collect(Collectors.toList());
-            claims.put("authorities", authorities);
-            logger.info("post processing claims {}", claims);
         }
-
+        logger.info("post processing claims {}", modifiableClaims);
         logger.info("Entering {}.{}", this.getClass().getName(), methodName);
 
-        return claims;
+        return modifiableClaims;
     }
 }
