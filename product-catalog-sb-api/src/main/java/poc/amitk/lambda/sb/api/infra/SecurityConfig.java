@@ -26,12 +26,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This demo's how to map from a 3rd party auth to your local service scopes. In general if you authority supports your scopes
+ * This demo's how to map from a 3rd party auth to your local service scopes. In
+ * general if you authority supports your scopes
  * you only need to configure:
  * 
  * jwt.jwkSetUri(this.jwkUri);
  * 
- * This is very different for different versions of spring.  e.g. the latest implementations do it differently again.
+ * This is very different for different versions of spring. e.g. the latest
+ * implementations do it differently again.
  * 
  */
 @Configuration
@@ -50,7 +52,7 @@ public class SecurityConfig {
             JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
             grantedAuthoritiesConverter.setAuthorityPrefix("SCOPE_");
             grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities"); // Use the custom claim "authorities"
-            setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);            
+            setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         }
 
     }
@@ -67,12 +69,11 @@ public class SecurityConfig {
             String methodName = new Exception().getStackTrace()[0].getMethodName();
             logger.info("Entering {}.{}", this.getClass().getName(), methodName);
             logger.info("claims {}", jwt.getClaims());
-      
             // Example: Custom validation for specific claim presence
             if (!jwt.hasClaim("authorities")) {
                 List<OAuth2Error> errors = new ArrayList<OAuth2Error>();
                 errors.add(new OAuth2Error("The required 'authorities' claim is missing."));
-                logger.info("Erroring {}.{}", this.getClass().getName(), methodName);
+                logger.info("Exiting with Errors {}.{}.{}", this.getClass().getName(), methodName, errors);
                 return OAuth2TokenValidatorResult.failure(errors);
             }
             logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
@@ -113,14 +114,17 @@ public class SecurityConfig {
                                             // If your OAuth2 provider uses its own scopes or roles then
                                             // you will have to do a variation of this.
                                             // In the case you have multiple providers some map and some don't
-                                            // you will also do this.                                        
+                                            // you will also do this.
                                             //
-                                            jwt.decoder(jwtDecoder());                                            
+                                            NimbusJwtDecoder decoder = jwtDecoder();
+                                            decoder.setClaimSetConverter(this::convertClaims);
+                                            decoder.setJwtValidator(new CustomJwtValidator());                                            
                                             jwt.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter());
+                                            jwt.decoder(decoder);
                                             ////
                                             //
                                             // If your OAuth2 provider uses your scopes then just do the following.
-                                            // 
+                                            //
                                             //
                                             // jwt.jwkSetUri(this.jwkUri);
                                         }));
@@ -147,9 +151,6 @@ public class SecurityConfig {
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder
                 .withJwkSetUri(jwkUri)
                 .build();
-
-        jwtDecoder.setClaimSetConverter(this::convertClaims);
-        jwtDecoder.setJwtValidator(new CustomJwtValidator());
         logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
         return jwtDecoder;
     }
