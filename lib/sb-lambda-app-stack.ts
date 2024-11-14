@@ -9,121 +9,123 @@ import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { ExtendedProps } from './config';
-import { getUserPoolIdByName, implicitGetUserPoolIdByName, MatsonStack } from './common';
+import { getUserPoolIdByName, MatsonStack } from './common';
 
 export class SpringbootApiLambdaStack extends MatsonStack {
 
-    public readonly apiEndpointUrl: cdk.CfnOutput;
-    public readonly lambdaFunctionName: cdk.CfnOutput;
+    public  apiEndpointUrl: cdk.CfnOutput;
+    public  lambdaFunctionName: cdk.CfnOutput;
 
     constructor(scope: Construct, id: string, props?: ExtendedProps) {
         super(scope, id, props);
+        (async (scope: Construct, id: string, props?: ExtendedProps) => {
 
-        // Getting VPC, Security Group, Subnet, and Secret configurations
-        const vpc = ec2.Vpc.fromLookup(this, 'VPC', { vpcId: 'vpc-42de9927' });
-        const securityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, "SG", "sg-0ea85090b812c3265");
-        const subnet = ec2.PrivateSubnet.fromSubnetAttributes(this, "subnet", { subnetId: "subnet-c56802b2" });
-        const dbAccessSecretId = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/dbaccesssecretid');
-        const secretPartialArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}`;
-        const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
+            // Getting VPC, Security Group, Subnet, and Secret configurations
+            const vpc = ec2.Vpc.fromLookup(this, 'VPC', { vpcId: 'vpc-42de9927' });
+            const securityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, "SG", "sg-0ea85090b812c3265");
+            const subnet = ec2.PrivateSubnet.fromSubnetAttributes(this, "subnet", { subnetId: "subnet-c56802b2" });
+            const dbAccessSecretId = ssm.StringParameter.valueForStringParameter(this, '/cdkpipelinepoc/matlab/dbaccesssecretid');
+            const secretPartialArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}`;
+            const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
 
-        // Lambda configuration
-        if (props?.extra?.lambda) {
-            const lambdaInformation: lambda.FunctionProps = {
-                functionName: props.extra.lambda.name,
-                runtime: props.extra.lambda.java?.version ?? lambda.Runtime.JAVA_21,
-                code: props.extra.lambda.code,
-                memorySize: props.extra.lambda.memory,
-                handler: props.extra.lambda.handler,
-                snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
-                vpc,
-                vpcSubnets: { subnets: [subnet] },
-                securityGroups: [securityGroup],
-                environment: {
-                    "datasource_secret_id": dbAccessSecretId,
-                },
-                timeout: cdk.Duration.seconds(props.extra.cdk?.timeout ?? 30),
-                tracing: props.extra.lambda.xrayEnabled ? lambda.Tracing.ACTIVE : lambda.Tracing.DISABLED,
-            };
+            // Lambda configuration
+            if (props?.extra?.lambda) {
+                const lambdaInformation: lambda.FunctionProps = {
+                    functionName: props.extra.lambda.name,
+                    runtime: props.extra.lambda.java?.version ?? lambda.Runtime.JAVA_21,
+                    code: props.extra.lambda.code,
+                    memorySize: props.extra.lambda.memory,
+                    handler: props.extra.lambda.handler,
+                    snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
+                    vpc,
+                    vpcSubnets: { subnets: [subnet] },
+                    securityGroups: [securityGroup],
+                    environment: {
+                        "datasource_secret_id": dbAccessSecretId,
+                    },
+                    timeout: cdk.Duration.seconds(props.extra.cdk?.timeout ?? 30),
+                    tracing: props.extra.lambda.xrayEnabled ? lambda.Tracing.ACTIVE : lambda.Tracing.DISABLED,
+                };
 
-            const springBootApiLambdaCdkPoc = new Function(this, props.extra.lambda.cdkId, lambdaInformation);
+                const springBootApiLambdaCdkPoc = new Function(this, props.extra.lambda.cdkId, lambdaInformation);
 
-            // X-Ray permissions
-            springBootApiLambdaCdkPoc.role?.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'));
+                // X-Ray permissions
+                springBootApiLambdaCdkPoc.role?.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'));
 
-            // Lambda alias
-            springBootApiLambdaCdkPoc.addAlias("Live");
+                // Lambda alias
+                springBootApiLambdaCdkPoc.addAlias("Live");
 
-            // Secret read permissions
-            dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
+                // Secret read permissions
+                dbAccessSecret.grantRead(springBootApiLambdaCdkPoc);
 
-            // Conditional OAuth2 setup
-            let authorizer;
+                // Conditional OAuth2 setup
+                let authorizer;
 
-            if (props.extra.oauth2?.cognito?.enableClient) {
-                let userPool: cognito.IUserPool | undefined = undefined;
-                const poolName: string = props.extra.oauth2.cognito.pool.name;
-                let userPoolID = implicitGetUserPoolIdByName(poolName, this.region);
+                if (props.extra.oauth2?.cognito?.enableClient) {
+                    let userPool: cognito.IUserPool | undefined = undefined;
+                    const poolName: string = props.extra.oauth2.cognito.pool.name;
+                    let userPoolID = await getUserPoolIdByName(poolName, this.region);
 
-                if (userPoolID) {
-                    userPool = cognito.UserPool.fromUserPoolId(this, 'FetchedUserPool', userPoolID);
-                    new cdk.CfnOutput(this, 'FetchedUserPoolID', { value: userPoolID });
+                    if (userPoolID) {
+                        userPool = cognito.UserPool.fromUserPoolId(this, 'FetchedUserPool', userPoolID);
+                        new cdk.CfnOutput(this, 'FetchedUserPoolID', { value: userPoolID });
+                    }
+                    if (userPool) {
+                        const poolProps: cognito.UserPoolClientProps = {
+                            userPool: userPool,
+                            ...props.extra.oauth2.cognito.pool.props
+                        };
+                        const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name, poolProps);
+
+                        // Cognito Authorizer
+                        authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.cdkId, {
+                            cognitoUserPools: [userPool],
+                        });
+
+                        new cdk.CfnOutput(this, 'AppClientId', { value: userPoolClient.userPoolClientId });
+                    }
                 }
-                if (userPool) {
-                    const poolProps: cognito.UserPoolClientProps = {
-                        userPool: userPool,
-                        ...props.extra.oauth2.cognito.pool.props
-                    };
-                    const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name, poolProps);
-
-                    // Cognito Authorizer
-                    authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.cdkId, {
-                        cognitoUserPools: [userPool],
+                ////
+                //
+                // CDK is very confused and hard to follow in this area.  There are multiple ways to do the same thing.
+                //
+                let api;
+                const lambdaIntegration = new apigateway.LambdaIntegration(springBootApiLambdaCdkPoc, {
+                    proxy: true,  // Set to true for proxy mode or configure custom integration options if needed
+                });
+                if (props?.extra?.oas) {
+                    api = new apigateway.SpecRestApi(this, props?.extra?.oas.cdkId, {
+                        restApiName: props.extra.apiGateway?.name ?? '',
+                        // Load OpenAPI definition from file
+                        apiDefinition: apigateway.ApiDefinition.fromAsset(props.extra.oas.value),
+                        deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
                     });
-
-                    new cdk.CfnOutput(this, 'AppClientId', { value: userPoolClient.userPoolClientId });
+                } else {
+                    // Configure non-OpenAPI API Gateway
+                    api = new apigateway.RestApi(this, props.extra.apiGateway?.name ?? '', {
+                        deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
+                    });
                 }
-            }
-            ////
-            //
-            // CDK is very confused and hard to follow in this area.  There are multiple ways to do the same thing.
-            //
-            let api;
-            const lambdaIntegration = new apigateway.LambdaIntegration(springBootApiLambdaCdkPoc, {
-                proxy: true,  // Set to true for proxy mode or configure custom integration options if needed
-            });
-            if (props?.extra?.oas) {
-                api = new apigateway.SpecRestApi(this, props?.extra?.oas.cdkId, {
-                    restApiName: props.extra.apiGateway?.name ?? '',
-                    // Load OpenAPI definition from file
-                    apiDefinition: apigateway.ApiDefinition.fromAsset(props.extra.oas.value),
-                    deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
-                });
+
+                this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", { value: api.url });
+                this.lambdaFunctionName = new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ?? '' });
+
+                // Define the '/products' resource with conditional OAuth2 authorization
+                const products = api.root.addResource('products');
+                const authorizationOptions = props.extra.oauth2?.cognito?.enableClient
+                    ? { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer }
+                    : undefined;
+
+                products.addMethod('GET', lambdaIntegration, authorizationOptions);
+                products.addMethod('POST', lambdaIntegration, authorizationOptions);
+                products.addMethod('DELETE', lambdaIntegration, authorizationOptions);
+
+                const product = products.addResource("{productSku}");
+                product.addMethod('GET', lambdaIntegration, authorizationOptions);
+                product.addMethod('DELETE', lambdaIntegration, authorizationOptions);
             } else {
-                // Configure non-OpenAPI API Gateway
-                api = new apigateway.RestApi(this, props.extra.apiGateway?.name ?? '', {
-                    deployOptions: { tracingEnabled: props.extra.lambda.xrayEnabled ?? false },
-                });
+                throw new Error("Missing Lambda configuration!");
             }
-
-            this.apiEndpointUrl = new cdk.CfnOutput(this, "ApiEndpointUrl", { value: api.url });
-            this.lambdaFunctionName = new cdk.CfnOutput(this, 'lambdaFunctionName', { value: lambdaInformation.functionName ?? '' });
-
-            // Define the '/products' resource with conditional OAuth2 authorization
-            const products = api.root.addResource('products');
-            const authorizationOptions = props.extra.oauth2?.cognito?.enableClient
-                ? { authorizationType: apigateway.AuthorizationType.COGNITO, authorizer }
-                : undefined;
-
-            products.addMethod('GET', lambdaIntegration, authorizationOptions);
-            products.addMethod('POST', lambdaIntegration, authorizationOptions);
-            products.addMethod('DELETE', lambdaIntegration, authorizationOptions);
-
-            const product = products.addResource("{productSku}");
-            product.addMethod('GET', lambdaIntegration, authorizationOptions);
-            product.addMethod('DELETE', lambdaIntegration, authorizationOptions);
-        } else {
-            throw new Error("Missing Lambda configuration!");
-        }
+        })(scope, id, props)
     }
 }

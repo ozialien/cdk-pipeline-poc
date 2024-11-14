@@ -48,7 +48,7 @@ const Context: ExtendedProps = {
         oauth2:
         {
             cognito: {
-                enable: false,
+                enable: true,
                 enableClient: false,
                 pool: {
                     cdkId: 'ProductCatalogOAuth2UserPool',

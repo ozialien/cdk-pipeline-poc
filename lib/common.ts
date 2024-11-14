@@ -1,9 +1,7 @@
 import { Construct } from "constructs";
 import { ExtendedProps, ExtraProps } from "./config";
 import * as cdk from 'aws-cdk-lib';
-import * as AWS from 'aws-sdk';
-import { IUserPool } from "aws-cdk-lib/aws-cognito";
-
+import {CognitoIdentityProvider, ListUserPoolsCommandInput} from '@aws-sdk/client-cognito-identity-provider';
 /**
  * Add extra parameters to setup a stack
  * You can override values from cdk.json if they are strings, numbers.
@@ -36,17 +34,17 @@ export class MatsonStack extends cdk.Stack {
  * @throws An error if the User Pool is not found.
  */
 export async function getUserPoolIdByName(userPoolName: string, region: string): Promise<string | null> {
-    const cognitoISP = new AWS.CognitoIdentityServiceProvider({ region });
+    const cognitoISP = new CognitoIdentityProvider({ region });
 
     let nextToken: string | undefined = undefined;
 
     do {
-        const params: AWS.CognitoIdentityServiceProvider.ListUserPoolsRequest = {
+        const params: ListUserPoolsCommandInput = {
             MaxResults: 60,
             NextToken: nextToken,
         };
 
-        const response = await cognitoISP.listUserPools(params).promise();
+        const response = await cognitoISP.listUserPools(params);
 
         const userPools = response.UserPools;
         if (userPools) {
@@ -63,10 +61,4 @@ export async function getUserPoolIdByName(userPoolName: string, region: string):
 }
 
 
-export const implicitGetUserPoolIdByName = (userPoolName: string, region: string): string | null => {
-    //@ts-ignore
-    return (async () => {
-        return await getUserPoolIdByName(userPoolName,region);
-      })();
 
-}
