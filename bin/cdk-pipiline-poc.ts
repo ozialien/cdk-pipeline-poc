@@ -50,7 +50,7 @@ const Context: ExtendedProps = {
                 enable: false,
                 enableClient: false,
                 pool: {
-                    cdkId: 'OProductCatalogOAuth2UserPool',
+                    cdkId: 'ProductCatalogOAuth2UserPool',
                     arn: '',
                     name: 'PCOAuth2UserPool',
                     authorizer: {

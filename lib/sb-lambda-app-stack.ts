@@ -60,24 +60,6 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             // Conditional OAuth2 setup
             let authorizer;
             let userPool: cognito.IUserPool | undefined = undefined;
-            if (props.extra.oauth2?.cognito?.enable) {
-                // Cognito User Pool and App Client
-                userPool = new cognito.UserPool(this, props.extra.oauth2.cognito.pool.cdkId, {
-                    userPoolName: props.extra.oauth2.cognito.pool.name,
-                    signInAliases: { email: true },
-                });
-                // Define a Domain for Hosted UI
-                const userPoolDomain = userPool.addDomain(props.extra.oauth2.cognito.pool.domain.cdkId, {
-                    cognitoDomain: {
-                        domainPrefix: props.extra.oauth2.cognito.pool.domain.prefix,
-                    },
-                });
-                new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
-                new cdk.CfnOutput(this, 'UserPoolArn', { value: userPool.userPoolArn });
-                new cdk.CfnOutput(this, 'HostedUIDomain', {
-                    value: userPoolDomain.domainName,
-                });
-            }
 
             if (props.extra.oauth2?.cognito?.enableClient) {
                 let userPoolID: string;
