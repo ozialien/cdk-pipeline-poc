@@ -53,6 +53,25 @@ const Context: ExtendedProps = {
                 pool: {
                     cdkId: 'ProductCatalogOAuth2UserPool',
                     name: 'PCOAuth2UserPool',
+                    verifyEmail: false,
+                    groups: [
+                        {
+                            name: 'readGroup'
+                        },
+                        {
+                            name: 'updateGroup'
+                        }
+                    ],
+                    users: [
+                        {
+                            email: 'ERider@matson.com',
+                            scopes: ['catalog/update', 'catalog/read']
+                        },
+                        {
+                            email: 'readonly@matson.com',
+                            scopes: ['catalog/update', 'catalog/read'];
+                        }   
+                    ],
                     authorizer: {
                         cdkId: 'CognitoAuthorizer'
                     },

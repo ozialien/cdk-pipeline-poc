@@ -42,9 +42,16 @@ export interface CognitoAuthorizerProps {
     readonly cdkId: string
 }
 
+export interface CognitoUserPoolUser {
+    readonly email: string,
+    readonly verifyEmail?: boolean,
+    readonly scopes: string[]
+}
+
 export interface CognitoPoolProps {
     readonly cdkId: string,
     readonly name: string,
+    readonly users: CognitoUserPoolUser[],
     readonly domain: CognitoDomainProps,
     readonly client: CognitoClientProps,
     readonly props: cognito.UserPoolClientOptions,
