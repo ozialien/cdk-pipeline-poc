@@ -9,7 +9,7 @@ import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { ExtendedProps } from './config';
-import { MatsonStack } from './common';
+import { getUserPoolIdByName, implicitGetUserPoolIdByName, MatsonStack } from './common';
 
 export class SpringbootApiLambdaStack extends MatsonStack {
 
@@ -59,26 +59,30 @@ export class SpringbootApiLambdaStack extends MatsonStack {
 
             // Conditional OAuth2 setup
             let authorizer;
-            let userPool: cognito.IUserPool | undefined = undefined;
 
             if (props.extra.oauth2?.cognito?.enableClient) {
-                let userPoolID: string;
+                let userPool: cognito.IUserPool | undefined = undefined;
+                const poolName: string = props.extra.oauth2.cognito.pool.name;
+                let userPoolID = implicitGetUserPoolIdByName(poolName, this.region);
 
-                if (!userPool) {
-                    userPool = cognito.UserPool.fromUserPoolArn(this, 'ImportedUserPool', userPoolID = props.extra.oauth2?.cognito?.pool.arn);
+                if (userPoolID) {
+                    userPool = cognito.UserPool.fromUserPoolId(this, 'FetchedUserPool', userPoolID);
+                    new cdk.CfnOutput(this, 'FetchedUserPoolID', { value: userPoolID });
                 }
-                const poolProps: cognito.UserPoolClientProps = {
-                    userPool: userPool,
-                    ...props.extra.oauth2.cognito.pool.props
-                };
-                const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name,poolProps);
+                if (userPool) {
+                    const poolProps: cognito.UserPoolClientProps = {
+                        userPool: userPool,
+                        ...props.extra.oauth2.cognito.pool.props
+                    };
+                    const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name, poolProps);
 
-                // Cognito Authorizer
-                authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.cdkId, {
-                    cognitoUserPools: [userPool],
-                });
+                    // Cognito Authorizer
+                    authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.cdkId, {
+                        cognitoUserPools: [userPool],
+                    });
 
-                new cdk.CfnOutput(this, 'AppClientId', { value: userPoolClient.userPoolClientId });
+                    new cdk.CfnOutput(this, 'AppClientId', { value: userPoolClient.userPoolClientId });
+                }
             }
             ////
             //

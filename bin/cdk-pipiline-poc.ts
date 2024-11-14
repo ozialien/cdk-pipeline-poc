@@ -5,6 +5,7 @@ import { CdkSetupCodeStarParameterStack } from '../lib/setup-codestar-stack';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { ExtendedProps } from '../lib/config';
 import { SpringbootApiLambdaStack } from '../lib/sb-lambda-app-stack';
+import { CognitoUserPoolStack } from '../lib/setup-cognito-provider-stack';
 
 const Context: ExtendedProps = {
     env: {
@@ -51,7 +52,6 @@ const Context: ExtendedProps = {
                 enableClient: false,
                 pool: {
                     cdkId: 'ProductCatalogOAuth2UserPool',
-                    arn: '',
                     name: 'PCOAuth2UserPool',
                     authorizer: {
                         cdkId: 'CognitoAuthorizer'
@@ -122,5 +122,5 @@ new CdkSetupCodeStarParameterStack(app, 'CdkSetupCodeStarParameterStack', Contex
 // Temporary because I don't have codestar access
 //
 // new CdkPipilinePocStack(app, 'CdkPipilinePocStack', Context);
-
+new CognitoUserPoolStack(app, 'CognitoUserPoolStack', Context);
 new SpringbootApiLambdaStack(app, 'SpringbootApiLambdaStack', Context);

@@ -2,6 +2,7 @@ import { Construct } from "constructs";
 import { ExtendedProps, ExtraProps } from "./config";
 import * as cdk from 'aws-cdk-lib';
 import * as AWS from 'aws-sdk';
+import { IUserPool } from "aws-cdk-lib/aws-cognito";
 
 /**
  * Add extra parameters to setup a stack
@@ -34,7 +35,7 @@ export class MatsonStack extends cdk.Stack {
  * @returns A promise that resolves to the User Pool ID.
  * @throws An error if the User Pool is not found.
  */
-export async function getUserPoolIdByName(userPoolName: string, region: string): Promise<string | null | undefined | > {
+export async function getUserPoolIdByName(userPoolName: string, region: string): Promise<string | null> {
     const cognitoISP = new AWS.CognitoIdentityServiceProvider({ region });
 
     let nextToken: string | undefined = undefined;
@@ -58,5 +59,14 @@ export async function getUserPoolIdByName(userPoolName: string, region: string):
         nextToken = response.NextToken;
     } while (nextToken);
 
-    return undefined;
+    return null;
+}
+
+
+export const implicitGetUserPoolIdByName = (userPoolName: string, region: string): string | null => {
+    //@ts-ignore
+    return (async () => {
+        return await getUserPoolIdByName(userPoolName,region);
+      })();
+
 }
