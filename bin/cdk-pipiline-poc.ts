@@ -56,12 +56,12 @@ const Context: ExtendedProps = {
                     groups: [
                         {
                             name: 'readGroup',
-                            scope: 'catalog/read',
+                            scope: 'catalogRead',
                             description: 'Read the catalog'
                         },
                         {
                             name: 'updateGroup',
-                            scope: 'catalog/update',
+                            scope: 'catalogUpdate',
                             description: 'Update the catalog'
                         }
                     ],
