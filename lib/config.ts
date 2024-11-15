@@ -44,14 +44,21 @@ export interface CognitoAuthorizerProps {
 
 export interface CognitoUserPoolUser {
     readonly email: string,
+    readonly name: string,
     readonly verifyEmail?: boolean,
-    readonly scopes: string[]
+    readonly groups: Array<string>
+}
+export interface CognitoGroupScope {
+    readonly name: string,
+    readonly scope: string,
+    readonly description: string
 }
 
 export interface CognitoPoolProps {
     readonly cdkId: string,
     readonly name: string,
-    readonly users: CognitoUserPoolUser[],
+    readonly groups: Array<CognitoGroupScope>,
+    readonly users: Array<CognitoUserPoolUser>,
     readonly domain: CognitoDomainProps,
     readonly client: CognitoClientProps,
     readonly props: cognito.UserPoolClientOptions,
@@ -65,7 +72,7 @@ export interface CognitoProps {
 }
 
 export interface OAuth2Props {
-    
+
     readonly cognito: CognitoProps
 }
 
