@@ -61,47 +61,13 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- AWS XRAY Tracing Start -->
-		<!-- spring does not use javax.servlet
+		<!-- Spring Boot 3 uses open telemetry API-->
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>4.0.1</version>
-			<scope>provided</scope>
-		</dependency> -->
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
+			<groupId>io.opentelemetry</groupId>
+			<artifactId>opentelemetry-api</artifactId>
+			<version>1.29.0</version>
 		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-xray-recorder-sdk-core</artifactId>
-			<version>${aws-xray-recorder.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-xray-recorder-sdk-aws-sdk</artifactId>
-			<version>${aws-xray-recorder.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-xray-recorder-sdk-apache-http</artifactId>
-			<version>${aws-xray-recorder.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-xray-recorder-sdk-spring</artifactId>
-			<version>${aws-xray-recorder.version}</version>
-		</dependency>
-		<!-- Have to switch to ADOT -->
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-xray-recorder-sdk-core</artifactId>
-			<version>${aws-xray-recorder.version}</version>
-		</dependency>
-
-		<!-- AWS XRAY Tracing End -->
+		<!-- End of open telemetry-->
 
 
 		<!-- OAuth2 Dependency Start
