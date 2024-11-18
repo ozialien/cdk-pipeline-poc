@@ -45,7 +45,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
 
         // Obtain a Tracer instance
-        Tracer tracer = GlobalOpenTelemetry.getTracer("my-instrumentation-library");
+        Tracer tracer = GlobalOpenTelemetry.getTracer("ProductCatalogService");
 
         // Start a new Span representing the handleRequest method
         Span span = tracer.spanBuilder(methodName).startSpan();
