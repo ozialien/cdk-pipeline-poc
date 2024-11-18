@@ -5,9 +5,9 @@ import com.amazonaws.xray.AWSXRayRecorder;
 import com.amazonaws.xray.javax.servlet.AWSXRayServletFilter;
 import com.amazonaws.xray.spring.aop.XRayEnabled;
 
+import jakarta.servlet.Filter;
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
 
-import javax.servlet.Filter;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
