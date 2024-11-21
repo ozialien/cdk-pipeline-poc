@@ -27,6 +27,15 @@ export class SpringbootApiLambdaStack extends MatsonStack {
         const secretPartialArn = `arn:aws:secretsmanager:${this.region}:${this.account}:secret:${dbAccessSecretId}`;
         const dbAccessSecret = secretMgr.Secret.fromSecretPartialArn(this, 'SecretFromCompleteArn', secretPartialArn);
 
+        ////
+        // Note we are using Java 21 and ADOT supports 11, 17
+        // Need to check this
+        // Define the ADOT Lambda Layer ARN
+        const adotLayerArn = `arn:aws:lambda:${this.region}:901920570463:layer:aws-otel-java-agent:17`; // Replace 17 with the latest version
+
+        // Reference the ADOT Lambda Layer
+        const adotLayer = lambda.LayerVersion.fromLayerVersionArn(this, 'ADOTLayer', adotLayerArn);
+
         // Lambda configuration
         if (props?.extra?.lambda) {
             const lambdaInformation: lambda.FunctionProps = {
@@ -39,8 +48,19 @@ export class SpringbootApiLambdaStack extends MatsonStack {
                 vpc,
                 vpcSubnets: { subnets: [subnet] },
                 securityGroups: [securityGroup],
+                layers: [adotLayer],
                 environment: {
                     "datasource_secret_id": dbAccessSecretId,
+                    AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-handler',
+                    // Add other environment variables as needed
+                    TRACING_ENABLED: process.env.TRACING_ENABLED || 'false', // Example
+                    // Additional OpenTelemetry environment variables
+                    OTEL_TRACES_EXPORTER: 'otlp',
+                    OTEL_EXPORTER_OTLP_ENDPOINT: 'https://xray.amazonaws.com',
+                    OTEL_PROPAGATORS: 'xray',
+                    OTEL_INSTRUMENTATION_JDBC_ENABLED: 'true',
+                    OTEL_INSTRUMENTATION_COMMON_DB_STATEMENT_SANITIZER_ENABLE: 'true',
+                    OTEL_RESOURCE_ATTRIBUTES: 'service.name=your-service-name',
                 },
                 timeout: cdk.Duration.seconds(props.extra.cdk?.timeout ?? 30),
                 tracing: props.extra.lambda.xrayEnabled ? lambda.Tracing.ACTIVE : lambda.Tracing.DISABLED,
@@ -89,7 +109,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
                     userPool: userPool,
                     ...props.extra.oauth2.cognito.pool.props
                 };
-                const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name,poolProps);
+                const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name, poolProps);
 
                 // Cognito Authorizer
                 authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.cdkId, {
