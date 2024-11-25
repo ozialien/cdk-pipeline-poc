@@ -89,7 +89,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
                     userPool: userPool,
                     ...props.extra.oauth2.cognito.pool.props
                 };
-                const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name,poolProps);
+                const userPoolClient = new cognito.UserPoolClient(this, props.extra.oauth2.cognito.pool.client.name, poolProps);
 
                 // Cognito Authorizer
                 authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, props.extra.oauth2.cognito.pool.authorizer.cdkId, {
@@ -105,6 +105,38 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             let api;
             const lambdaIntegration = new apigateway.LambdaIntegration(springBootApiLambdaCdkPoc, {
                 proxy: true,  // Set to true for proxy mode or configure custom integration options if needed
+                ////
+                //
+                // This will not work in proxy: true so move the logic to Lambda.
+                //
+                requestTemplates: {
+                    'application/json': `{
+                      "headers": {
+                        #foreach($key in $input.params().header.keySet())
+                          "$key": "$util.escapeJavaScript($input.params().header.get($key))"#if($foreach.hasNext),#end
+                        #end
+                        #if(!$input.params().header.get('X-Correlation-ID'))
+                          ,"X-Correlation-ID": "$context.requestId"
+                        #end
+                      },
+                      "body": $input.body
+                    }`
+                },
+                ////
+                //
+                // Its very non-generic here so my advice is to do it in the Lambda code itself since there
+                // you can set if generically rather than having the API Gateway have to have several configurations
+                // to set it.
+                //
+                // integrationResponses: [{
+                //     statusCode: '200',
+                //     responseTemplates: {
+                //       'application/json': '$input.body',
+                //     },
+                //     responseParameters: {
+                //       'method.response.header.X-Correlation-ID': 'integration.response.body.headers.X-Correlation-ID',
+                //     },
+                //   }]
             });
             if (props?.extra?.oas) {
                 api = new apigateway.SpecRestApi(this, props?.extra?.oas.cdkId, {
@@ -132,7 +164,7 @@ export class SpringbootApiLambdaStack extends MatsonStack {
             products.addMethod('GET', lambdaIntegration, authorizationOptions);
             products.addMethod('POST', lambdaIntegration, authorizationOptions);
             products.addMethod('DELETE', lambdaIntegration, authorizationOptions);
-
+            
             const product = products.addResource("{productSku}");
             product.addMethod('GET', lambdaIntegration, authorizationOptions);
             product.addMethod('DELETE', lambdaIntegration, authorizationOptions);

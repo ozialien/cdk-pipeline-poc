@@ -1,8 +1,11 @@
 package poc.amitk.lambda.sb.api.infra;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import org.slf4j.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,17 +22,19 @@ import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author amitkapps
  */
 public class StreamLambdaHandler implements RequestStreamHandler {
+    private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
+    private static final String CORRELATION_ID_MDC_KEY = "correlationId";
     private static final String CURRENT_CLASS_NAME = StreamLambdaHandler.class.getName();
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger logger = LoggerFactory.getLogger(StreamLambdaHandler.class);
-    // Obtain a Tracer instance
-    private static final Tracer tracer = GlobalOpenTelemetry.getTracer("ProductCatalogService");
-
+    
     static {
         try {
             handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(ProductCatalogSbApiApplication.class);
@@ -46,36 +51,46 @@ public class StreamLambdaHandler implements RequestStreamHandler {
 
         // Log entering the method
         String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-        logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
 
-        // Start a new Span representing the handleRequest method
-        Span span = tracer.spanBuilder(methodName).startSpan();
 
-        // Make the span the current span
-        try (Scope scope = span.makeCurrent()) {
-            String traceid = span.getSpanContext().getTraceId();
-            SpanContext spanContext = span.getSpanContext();
-            MDC.put("traceId", spanContext.getTraceId());
-            MDC.put("spanId", spanContext.getSpanId());
+        ////
+        //
+        // Start Business Correlation
+        //        
+        ByteArrayOutputStream cachedStream = new ByteArrayOutputStream();
+        inputStream.transferTo(cachedStream);
+        byte[] inputBytes = cachedStream.toByteArray();
+        InputStream cachedInputForHeaders = new ByteArrayInputStream(inputBytes);
+        InputStream cachedInputForHandler = new ByteArrayInputStream(inputBytes);
 
-            // Optionally, set attributes on the span
-            span.setAttribute("aws.lambda.function_name", context.getFunctionName());
-            span.setAttribute("aws.lambda.request_id", context.getAwsRequestId());
-            logger.info("TraceID: {}", traceid);
+        logger.info("Received JSON data: {}", new String(inputBytes,
+                StandardCharsets.UTF_8));
+
+        AwsProxyRequest request = objectMapper.readValue(cachedInputForHeaders,
+                AwsProxyRequest.class);
+
+        String correlationId = request.getHeaders().getOrDefault(CORRELATION_ID_HEADER, null);
+        // Put the correlation ID into MDC
+        if (correlationId == null) {
+            correlationId = context.getAwsRequestId();
+        }
+
+        MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
+        logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);        
+        //
+        // End Business Correlation setup
+        ////
+    
+        try {
             // Call the handler method
-            handler.proxyStream(inputStream, outputStream, context);
-
+            handler.proxyStream(cachedInputForHandler, outputStream, context);
         } catch (Exception e) {
-            // Record the exception in the span
-            span.recordException(e);
-            span.setStatus(StatusCode.ERROR, "Exception in handleRequest");
             logger.error("Error occurred", e);
-            // Re-throw the exception to maintain the original behavior
             throw e;
         } finally {
-            // End the span
-            span.end();
             logger.info("Exiting {}.{}", CURRENT_CLASS_NAME, methodName);
+            // End the span
+            MDC.remove(CORRELATION_ID_MDC_KEY);
         }
     }
 
