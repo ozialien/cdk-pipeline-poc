@@ -5,10 +5,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
@@ -17,7 +17,7 @@ import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Segment;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
@@ -27,7 +27,11 @@ import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
  */
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
+    private static final String CORRELATION_ID_MDC_KEY = "correlationId";
+    private static final String CURRENT_CLASS_NAME = StreamLambdaHandler.class.getName();
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
     // Create a logger instance
     private static final Logger logger = LoggerFactory.getLogger(StreamLambdaHandler.class);
 
@@ -45,84 +49,49 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         }
     }
 
-    /**
-     * 
-     * Being able to dynamically switch on and off XRay tracing via the api gateway
-     * trace header
-     * is apparently a cost save.
-     * Even when XRay tracing is switched on in Lambda you can ihitiate a full trace
-     * this way.
-     * 
-     * Recorded traces: $5 per million traces recorded
-     * Retrieved traces: $0.50 per million traces retrieved
-     * Scanned traces: $0.50 per million traces scanned
-     * X-Ray Insights traces stored: $1 per million traces recorded
-     * Sampling rate: The chosen sampling rate is multiplied by the request or API
-     * call rate to estimate costs
-     * 
-     * 
-     * @param inputStream
-     * @param outputStream
-     * @param context
-     * @throws IOException
-     */
+    private String extractCorrelationId(InputStream inputStream) throws IOException {
+        JsonNode eventNode = objectMapper.readTree(inputStream);
+        JsonNode headersNode = eventNode.get("headers");
+        if (headersNode != null && headersNode.has(CORRELATION_ID_HEADER)) {
+            return headersNode.get(CORRELATION_ID_HEADER).asText();
+        }
+        return null;
+    }
+
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream,
             Context context)
             throws IOException {
-        String methodName = new Exception().getStackTrace()[0].getMethodName();
-        logger.info("Entering {}.{}", this.getClass().getName(), methodName);
 
-        ByteArrayOutputStream cachedStream = new ByteArrayOutputStream();
-        inputStream.transferTo(cachedStream);
-        byte[] inputBytes = cachedStream.toByteArray();
-        InputStream cachedInputForHeaders = new ByteArrayInputStream(inputBytes);
-        InputStream cachedInputForHandler = new ByteArrayInputStream(inputBytes);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        inputStream.transferTo(byteArrayOutputStream);
+        byte[] bytes = byteArrayOutputStream.toByteArray();
+        InputStream inputStreamCopy1 = new ByteArrayInputStream(bytes);
+        InputStream inputStreamCopy2 = new ByteArrayInputStream(bytes);
 
-        logger.info("Received JSON data: {}", new String(inputBytes,
-                StandardCharsets.UTF_8));
+        ////
+        //
+        // Upstream somebody may have added one already
+        //
+        String correlationId = extractCorrelationId(inputStreamCopy1);
 
-        AwsProxyRequest request = objectMapper.readValue(cachedInputForHeaders,
-                AwsProxyRequest.class);
-        String traceHeader = request.getHeaders().getOrDefault("X-Amzn-Trace-Id",
-                null);
-
-        logger.info("X-Amzn-Trace-Id: {}", traceHeader);
-        Segment segment = null;
-
-        if (traceHeader != null) {
-            // If tracing header is present, start a new X-Ray segment for this request
-            segment = AWSXRay.beginSegment("ProductCatalogService");
+        ////
+        //
+        // If not then add a unique one and setup logging to show it
+        //
+        if (correlationId == null) {
+            correlationId = context.getAwsRequestId();
         }
-
+        MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
+        String methodName = new Exception().getStackTrace()[0].getMethodName();
         try {
-            // Forward the request to the handler
-            handler.proxyStream(cachedInputForHandler, outputStream, context);
-        } catch (Exception e) {
-            if (segment != null) {
-                segment.addException(e);
-            }
-            throw e;
+            logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
+            String traceId = AWSXRay.getCurrentSegment().getTraceId().toString();
+            logger.info("Trace ID: {}", traceId);
+            handler.proxyStream(inputStreamCopy2, outputStream, context);
         } finally {
-            // End the segment if it was started
-            if (segment != null) {
-                AWSXRay.endSegment();
-            }
-            logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
-
+            logger.info("Exiting {}.{}", CURRENT_CLASS_NAME, methodName);
+            MDC.remove(CORRELATION_ID_MDC_KEY);
         }
     }
-
-    // @Override
-    // public void handleRequest(InputStream inputStream, OutputStream outputStream,
-    // Context context)
-    // throws IOException {
-    // String methodName = new Exception().getStackTrace()[0].getMethodName();
-    // logger.info("Entering {}.{}", this.getClass().getName(), methodName);
-    // try {
-    // handler.proxyStream(inputStream, outputStream, context);
-    // } finally {
-    // logger.info("Exiting {}.{}", this.getClass().getName(), methodName);
-    // }
-    // }
 }
