@@ -85,7 +85,9 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         }
 
         if (traceId != null) {
-            MDC.put(TRACE_ID_MDC_KEY, correlationId);
+            MDC.put(TRACE_ID_MDC_KEY, traceId);
+        } else {
+            MDC.put(TRACE_ID_MDC_KEY, "no-trace");    
         }
 
         String methodName = new Exception().getStackTrace()[0].getMethodName();
