@@ -16,7 +16,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Entity;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
 import software.amazon.lambda.powertools.logging.Logging;
@@ -28,11 +27,8 @@ import software.amazon.lambda.powertools.tracing.Tracing;
 
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    private static final String TRACE_ID_HEADER = "X-Amzn-Trace-Id";
-    private static final String CORRELATION_ID_MDC_KEY = "correlation_id"; // Powertools name
     private static final String TRACE_ID_MDC_KEY = "traceId";
     private static final String CURRENT_CLASS_NAME = StreamLambdaHandler.class.getName();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     // Create a logger instance
     private static final Logger logger = LoggerFactory.getLogger(StreamLambdaHandler.class);
@@ -51,22 +47,25 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         }
     }
 
+    private String getTraceId() {
+        String xAmznTraceId = System.getenv("_X_AMZN_TRACE_ID");
+        if (xAmznTraceId != null) {
+            for (String part : xAmznTraceId.split(";")) {
+                if (part.startsWith("Root=")) {
+                    return part.substring(5); // Extract the Trace ID after 'Root='
+                }
+            }
+        }
+        return "no-trace-id";
+    }
+
     @Override
     @Tracing(segmentName = "ProductCatalogService")
     @Logging(correlationIdPath = "headers.X-Correlation-ID", logEvent = true)
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
-
-        // Retrieve the X-Ray Trace ID and add it to MDC
-        Entity currentEntity = AWSXRay.getTraceEntity();
-        if (currentEntity != null) {
-            String traceId = currentEntity.getTraceId().toString();
-            MDC.put(TRACE_ID_MDC_KEY, traceId);
-        } else {
-            logger.warn("No X-Ray entity found");
-            MDC.put(TRACE_ID_MDC_KEY, "no-trace");
-        }
+        MDC.put(TRACE_ID_MDC_KEY, getTraceId());
         // Log method entry
         logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
         try {
