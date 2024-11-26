@@ -17,6 +17,7 @@ import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Segment;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -28,7 +29,9 @@ import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
+    private static final String TRACE_ID_HEADER = "X-Amzn-Trace-Id";
     private static final String CORRELATION_ID_MDC_KEY = "correlationId";
+    private static final String TRACE_ID_MDC_KEY = "traceId";
     private static final String CURRENT_CLASS_NAME = StreamLambdaHandler.class.getName();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -49,15 +52,6 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         }
     }
 
-    private String extractCorrelationId(InputStream inputStream) throws IOException {
-        JsonNode eventNode = objectMapper.readTree(inputStream);
-        JsonNode headersNode = eventNode.get("headers");
-        if (headersNode != null && headersNode.has(CORRELATION_ID_HEADER)) {
-            return headersNode.get(CORRELATION_ID_HEADER).asText();
-        }
-        return null;
-    }
-
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream,
             Context context)
@@ -69,27 +63,45 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         InputStream inputStreamCopy1 = new ByteArrayInputStream(bytes);
         InputStream inputStreamCopy2 = new ByteArrayInputStream(bytes);
 
-        ////
-        //
-        // Upstream somebody may have added one already
-        //
-        String correlationId = extractCorrelationId(inputStreamCopy1);
+        String correlationId = null;
+        String traceId = null;
+        JsonNode eventNode = objectMapper.readTree(inputStreamCopy1);
+        JsonNode headersNode = eventNode.get("headers");
 
-        ////
-        //
-        // If not then add a unique one and setup logging to show it
-        //
+        if (headersNode != null && headersNode.has(CORRELATION_ID_HEADER)) {
+            correlationId = headersNode.get(CORRELATION_ID_HEADER).asText();
+        }
         if (correlationId == null) {
             correlationId = context.getAwsRequestId();
         }
         MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
+
+        Segment segment = null;
+        if (headersNode != null && headersNode.has(TRACE_ID_HEADER)) {
+            traceId = headersNode.get(TRACE_ID_HEADER).asText();
+            logger.info("Fetched traceId from API Gateway Proxy Header: {}", traceId);
+            segment = AWSXRay.beginSegment("ProductCatalogService");
+
+        }
+
+        if (traceId != null) {
+            MDC.put(TRACE_ID_MDC_KEY, correlationId);
+        }
+
         String methodName = new Exception().getStackTrace()[0].getMethodName();
+
         try {
             logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
-            String traceId = AWSXRay.getCurrentSegment().getTraceId().toString();
-            logger.info("Trace ID: {}", traceId);
             handler.proxyStream(inputStreamCopy2, outputStream, context);
+        } catch (Exception e) {
+            if (segment != null) {
+                segment.addException(e);
+            }
+            throw e;
         } finally {
+            if (segment != null) {
+                AWSXRay.endSegment();
+            }
             logger.info("Exiting {}.{}", CURRENT_CLASS_NAME, methodName);
             MDC.remove(CORRELATION_ID_MDC_KEY);
         }
