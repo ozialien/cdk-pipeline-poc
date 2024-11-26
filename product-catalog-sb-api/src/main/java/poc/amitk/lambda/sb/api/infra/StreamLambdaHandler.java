@@ -61,7 +61,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
 
     @Override
     @Tracing(segmentName = "ProductCatalogService")
-    @Logging(correlationIdPath = "headers.X-Correlation-ID", logEvent = true)
+    @Logging(correlationIdPath = "headers.X-Correlation-Id", logEvent = true)
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
