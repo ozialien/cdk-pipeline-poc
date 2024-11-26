@@ -1,7 +1,5 @@
 package poc.amitk.lambda.sb.api.infra;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,20 +15,21 @@ import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Segment;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.amazonaws.xray.entities.Entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
+import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.tracing.Tracing;
 
 /**
  * @author amitkapps
  */
+
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
     private static final String TRACE_ID_HEADER = "X-Amzn-Trace-Id";
-    private static final String CORRELATION_ID_MDC_KEY = "correlationId";
+    private static final String CORRELATION_ID_MDC_KEY = "correlation_id"; // Powertools name
     private static final String TRACE_ID_MDC_KEY = "traceId";
     private static final String CURRENT_CLASS_NAME = StreamLambdaHandler.class.getName();
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -53,59 +52,37 @@ public class StreamLambdaHandler implements RequestStreamHandler {
     }
 
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream,
-            Context context)
+    @Tracing(segmentName = "ProductCatalogService")
+    @Logging(correlationIdPath = "headers.X-Correlation-ID", logEvent = true)
+    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
-
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        inputStream.transferTo(byteArrayOutputStream);
-        byte[] bytes = byteArrayOutputStream.toByteArray();
-        InputStream inputStreamCopy1 = new ByteArrayInputStream(bytes);
-        InputStream inputStreamCopy2 = new ByteArrayInputStream(bytes);
-
-        String correlationId = null;
-        String traceId = null;
-        JsonNode eventNode = objectMapper.readTree(inputStreamCopy1);
-        JsonNode headersNode = eventNode.get("headers");
-
-        if (headersNode != null && headersNode.has(CORRELATION_ID_HEADER)) {
-            correlationId = headersNode.get(CORRELATION_ID_HEADER).asText();
-        }
-        if (correlationId == null) {
-            correlationId = context.getAwsRequestId();
-        }
-        MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
-
-        Segment segment = null;
-        if (headersNode != null && headersNode.has(TRACE_ID_HEADER)) {
-            traceId = headersNode.get(TRACE_ID_HEADER).asText();
-            logger.info("Fetched traceId from API Gateway Proxy Header: {}", traceId);
-            segment = AWSXRay.beginSegment("ProductCatalogService");
-
-        }
-
-        if (traceId != null) {
-            MDC.put(TRACE_ID_MDC_KEY, traceId);
-        } else {
-            MDC.put(TRACE_ID_MDC_KEY, "no-trace");    
-        }
-
         String methodName = new Exception().getStackTrace()[0].getMethodName();
 
+        // Retrieve the X-Ray Trace ID and add it to MDC
+        Entity currentEntity = AWSXRay.getTraceEntity();
+        if (currentEntity != null) {
+            String traceId = currentEntity.getTraceId().toString();
+            MDC.put(TRACE_ID_MDC_KEY, traceId);
+        } else {
+            logger.warn("No X-Ray entity found");
+            MDC.put(TRACE_ID_MDC_KEY, "no-trace");
+        }
+        // Log method entry
+        logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
         try {
-            logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
-            handler.proxyStream(inputStreamCopy2, outputStream, context);
+            // Process the event
+            // Pass the original event node or recreate the InputStream if necessary
+            // Your processing logic here
+            handler.proxyStream(inputStream, outputStream, context);
         } catch (Exception e) {
-            if (segment != null) {
-                segment.addException(e);
-            }
+            // Powertools Tracing automatically captures exceptions
+            logger.error("An error occurred", e);
             throw e;
         } finally {
-            if (segment != null) {
-                AWSXRay.endSegment();
-            }
+            // Log method exit
             logger.info("Exiting {}.{}", CURRENT_CLASS_NAME, methodName);
-            MDC.remove(CORRELATION_ID_MDC_KEY);
+            // No need to manually manage MDC or X-Ray segments
         }
     }
+
 }

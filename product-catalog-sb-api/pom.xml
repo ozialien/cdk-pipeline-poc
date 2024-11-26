@@ -18,6 +18,7 @@
 		<java.version>21</java.version>
 		<aws.java.sdk.version>2.20.10</aws.java.sdk.version>
 		<aws-xray-recorder.version>2.18.2</aws-xray-recorder.version>
+		<powertools.version>1.18.0</powertools.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -84,16 +85,37 @@
 		</dependency>
 		<!-- AWS XRAY Tracing End -->
 
-
+		<!-- Powertools Helpers for things -->
+		<dependency>
+			<groupId>software.amazon.lambda</groupId>
+			<artifactId>powertools-core</artifactId>
+			<version>${powertools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.lambda</groupId>
+			<artifactId>powertools-logging</artifactId>
+			<version>${powertools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.lambda</groupId>
+			<artifactId>powertools-tracing</artifactId>
+			<version>${powertools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.lambda</groupId>
+			<artifactId>powertools-metrics</artifactId>
+			<version>${powertools.version}</version>
+		</dependency>
+<!-- End of Powertools-->
 		<!-- OAuth2 Dependency Start
 
 		Just defining these without configuration in spring boot will
 		automatically invoke security and cause a 401
 		Using the apiGateway against Oauth2 might be a better approach
--->	    
+-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>		
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -103,7 +125,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
-	<!-- OAuth2 Dependency End -->
+		<!-- OAuth2 Dependency End -->
 	</dependencies>
 
 	<build>
