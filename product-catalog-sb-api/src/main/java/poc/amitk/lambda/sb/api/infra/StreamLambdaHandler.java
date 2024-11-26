@@ -28,6 +28,8 @@ import software.amazon.lambda.powertools.tracing.Tracing;
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static final String TRACE_ID_MDC_KEY = "traceId";
+    private static final String CORRELATION_ID_MDC_KEY = "correlation_id";
+
     private static final String CURRENT_CLASS_NAME = StreamLambdaHandler.class.getName();
 
     // Create a logger instance
@@ -66,6 +68,14 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             throws IOException {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
         MDC.put(TRACE_ID_MDC_KEY, getTraceId());
+
+        ////
+        //
+        // This is just to check powertools is honest about their
+        // implementation.
+        String correlationId = MDC.get(CORRELATION_ID_MDC_KEY);
+        logger.info("Powertools extracted correlation ID: {}", correlationId);
+    
         // Log method entry
         logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
         try {
