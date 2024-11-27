@@ -51,11 +51,10 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         }
     }
 
-    private String getTraceId() {
+    private String getTraceId(Segment segment) {
         String traceId = "no-trace-id";
-        Entity trace = AWSXRay.getTraceEntity();
-        if(trace != null) {
-            traceId = trace.getTraceId().toString();
+        if(segment != null) {
+            traceId = segment.getTraceId().toString();
             logger.info("traceId: ", traceId);
         }
         return traceId;
@@ -67,10 +66,11 @@ public class StreamLambdaHandler implements RequestStreamHandler {
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
-        MDC.put(TRACE_ID_MDC_KEY, getTraceId());
+        Segment segment = AWSXRay.beginSegment("ProductCatalogService");
+        MDC.put(TRACE_ID_MDC_KEY, getTraceId(segment));
         String correlationId = MDC.get(CORRELATION_ID_MDC_KEY);
         if (correlationId == null) {
-            logger.info("Correlation not found in header adding it from lambda");
+            logger.info("CorrelaProductCatalogServicetion not found in header adding it from lambda");
             correlationId = context.getAwsRequestId();
             MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
         }
@@ -86,6 +86,10 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             // Log method exit
             logger.info("Exiting {}.{}", CURRENT_CLASS_NAME, methodName);
             // No need to manually manage MDC or X-Ray segments
+            // But apparently none of the powertools worked ?  So doing it manually
+            segment.end();
+            MDC.remove(TRACE_ID_MDC_KEY);
+            MDC.remove(CORRELATION_ID_MDC_KEY);
         }
     }
 

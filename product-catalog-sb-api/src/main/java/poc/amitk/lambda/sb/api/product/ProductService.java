@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Segment;
 
-import software.amazon.lambda.powertools.tracing.Tracing;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -25,21 +23,33 @@ public class ProductService {
 
     private Logger logger = LoggerFactory.getLogger(ProductService.class);
 
-    @Tracing(segmentName = "getProductBySku")
-    public Product getProductBySku(String productSku){
+    public Product getProductBySku(String productSku) {
         logger.info("Getting product: {}", productSku);
-        Segment segment = AWSXRay.getCurrentSegment();
-        if(segment != null) {
-          segment.putAnnotation("ProductSKU", productSku);
-          segment.putAnnotation("OperationType", "JavaFunctionInvoke");
+        try {
+            Segment segment = AWSXRay.getCurrentSegment();
+            if (segment != null) {
+                segment.putAnnotation("ProductSKU", productSku);
+                segment.putAnnotation("OperationName", "getProductBySku");
+                segment.putAnnotation("OperationType", "JavaFunctionInvoke");
+            }
+        } catch (Exception e) {
+            logger.error("Exception access segment info", e);
         }
         ProductEntity productEntity = productRepository.findByProductSku(productSku);
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
     }
 
-    @Tracing(segmentName = "getAllProducts")
     public List<Product> getAllProducts() {
         logger.info("getting all products");
+        try {
+            Segment segment = AWSXRay.getCurrentSegment();
+            if (segment != null) {
+                segment.putAnnotation("OperationName", "getAllProducts");
+                segment.putAnnotation("OperationType", "JavaFunctionInvoke");
+            }
+        } catch (Exception e) {
+            logger.error("Exception access segment info", e);
+        }
         List<ProductEntity> allProductEntities = productRepository.findAll();
         logger.info("found {} products", allProductEntities.size());
         return allProductEntities.stream()
@@ -47,7 +57,6 @@ public class ProductService {
                 .toList();
     }
 
-    @Tracing(segmentName = "addProductToCatalog")
     @Transactional
     public Product addProductToCatalog(Product product) {
         logger.info("Adding product {} to catalog", product.getProductSku());
@@ -56,7 +65,6 @@ public class ProductService {
         return ProductPojoConverter.toProduct(productEntity);
     }
 
-    @Tracing(segmentName = "removeProductFromCatalog")
     @Transactional
     public void removeProductFromCatalog(String productSku) {
         logger.info("Removing product {} from catalog", productSku);
@@ -65,7 +73,6 @@ public class ProductService {
         productRepository.delete(productEntity);
     }
 
-    @Tracing(segmentName = "removeAllProductsFromCatalog")
     @Transactional
     public void removeAllProductsFromCatalog() {
         logger.info("Removing all products from the catalog");
