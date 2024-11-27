@@ -14,9 +14,6 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Entity;
-
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.tracing.Tracing;
@@ -28,6 +25,7 @@ import software.amazon.lambda.powertools.tracing.Tracing;
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static final String TRACE_ID_MDC_KEY = "traceId";
+    // This is per the powertools prior to this I set this to a custom name
     private static final String CORRELATION_ID_MDC_KEY = "correlation_id";
 
     private static final String CURRENT_CLASS_NAME = StreamLambdaHandler.class.getName();
@@ -51,6 +49,8 @@ public class StreamLambdaHandler implements RequestStreamHandler {
 
     private String getTraceId() {
         String xAmznTraceId = System.getenv("_X_AMZN_TRACE_ID");
+        String methodName = new Exception().getStackTrace()[0].getMethodName();
+        logger.info("Exiting {}.{} _X_AMZN_TRACE_ID=", CURRENT_CLASS_NAME, methodName, xAmznTraceId);
         if (xAmznTraceId != null) {
             for (String part : xAmznTraceId.split(";")) {
                 if (part.startsWith("Root=")) {
@@ -68,20 +68,15 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             throws IOException {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
         MDC.put(TRACE_ID_MDC_KEY, getTraceId());
-
-        ////
-        //
-        // This is just to check powertools is honest about their
-        // implementation.
         String correlationId = MDC.get(CORRELATION_ID_MDC_KEY);
-        logger.info("Powertools extracted correlation ID: {}", correlationId);
-    
-        // Log method entry
+        if (correlationId == null) {
+            logger.info("Correlation not found in header adding it from lambda");
+            correlationId = context.getAwsRequestId();
+            MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
+        }
+        logger.info("Correlation Id: {}", correlationId);
         logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
         try {
-            // Process the event
-            // Pass the original event node or recreate the InputStream if necessary
-            // Your processing logic here
             handler.proxyStream(inputStream, outputStream, context);
         } catch (Exception e) {
             // Powertools Tracing automatically captures exceptions

@@ -1,4 +1,4 @@
-package poc.amitk.lambda.sb.api.infra;
+    package poc.amitk.lambda.sb.api.infra;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
