@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConditionalOnProperty(name = "aws.xray.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "xray.tracing.enabled", havingValue = "true")
 public class AwsXRayConfig {
     // Create a logger instance
     private static final Logger logger = LoggerFactory.getLogger(StreamLambdaHandler.class);
