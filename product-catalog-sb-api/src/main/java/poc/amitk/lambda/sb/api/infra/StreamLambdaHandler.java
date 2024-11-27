@@ -14,6 +14,10 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Entity;
+import com.amazonaws.xray.entities.Segment;
+
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.tracing.Tracing;
@@ -48,17 +52,13 @@ public class StreamLambdaHandler implements RequestStreamHandler {
     }
 
     private String getTraceId() {
-        String xAmznTraceId = System.getenv("_X_AMZN_TRACE_ID");
-        String methodName = new Exception().getStackTrace()[0].getMethodName();
-        logger.info("Exiting {}.{} _X_AMZN_TRACE_ID=", CURRENT_CLASS_NAME, methodName, xAmznTraceId);
-        if (xAmznTraceId != null) {
-            for (String part : xAmznTraceId.split(";")) {
-                if (part.startsWith("Root=")) {
-                    return part.substring(5); // Extract the Trace ID after 'Root='
-                }
-            }
+        String traceId = "no-trace-id";
+        Entity trace = AWSXRay.getTraceEntity();
+        if(trace != null) {
+            traceId = trace.getTraceId().toString();
+            logger.info("traceId: ", traceId);
         }
-        return "no-trace-id";
+        return traceId;
     }
 
     @Override

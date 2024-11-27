@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(name = "xray.tracing.enabled", havingValue = "true")
 public class AwsXRayConfig {
     // Create a logger instance
-    private static final Logger logger = LoggerFactory.getLogger(StreamLambdaHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(AwsXRayConfig.class);
 
     @PostConstruct
     public void init() {

@@ -6,6 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Segment;
+
+import software.amazon.lambda.powertools.tracing.Tracing;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -20,12 +25,19 @@ public class ProductService {
 
     private Logger logger = LoggerFactory.getLogger(ProductService.class);
 
+    @Tracing(segmentName = "getProductBySku")
     public Product getProductBySku(String productSku){
         logger.info("Getting product: {}", productSku);
+        Segment segment = AWSXRay.getCurrentSegment();
+        if(segment != null) {
+          segment.putAnnotation("ProductSKU", productSku);
+          segment.putAnnotation("OperationType", "JavaFunctionInvoke");
+        }
         ProductEntity productEntity = productRepository.findByProductSku(productSku);
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
     }
 
+    @Tracing(segmentName = "getAllProducts")
     public List<Product> getAllProducts() {
         logger.info("getting all products");
         List<ProductEntity> allProductEntities = productRepository.findAll();
@@ -35,14 +47,16 @@ public class ProductService {
                 .toList();
     }
 
+    @Tracing(segmentName = "addProductToCatalog")
     @Transactional
-    public Product addProductToCatalog(Product product){
+    public Product addProductToCatalog(Product product) {
         logger.info("Adding product {} to catalog", product.getProductSku());
         product.setAddedToCatalogOn(ZonedDateTime.now());
         ProductEntity productEntity = productRepository.save(ProductPojoConverter.toProductEntity(product));
         return ProductPojoConverter.toProduct(productEntity);
     }
 
+    @Tracing(segmentName = "removeProductFromCatalog")
     @Transactional
     public void removeProductFromCatalog(String productSku) {
         logger.info("Removing product {} from catalog", productSku);
@@ -51,6 +65,7 @@ public class ProductService {
         productRepository.delete(productEntity);
     }
 
+    @Tracing(segmentName = "removeAllProductsFromCatalog")
     @Transactional
     public void removeAllProductsFromCatalog() {
         logger.info("Removing all products from the catalog");
