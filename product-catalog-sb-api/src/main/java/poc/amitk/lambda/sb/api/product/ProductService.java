@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Segment;
+//import com.amazonaws.xray.AWSXRay;
+//import com.amazonaws.xray.entities.Segment;
 import com.amazonaws.xray.spring.aop.XRayEnabled;
 
-import software.amazon.lambda.powertools.tracing.TracingUtils;
+//import software.amazon.lambda.powertools.tracing.TracingUtils;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -40,17 +40,17 @@ public class ProductService {
 
     public Product getProductBySku(String productSku) {
         logger.info("Getting product: {}", productSku);
-        //TracingUtils.putAnnotation(PRODUCT_SKU, productSku);
-        //TracingUtils.putAnnotation(OPERATION_NAME, "getProductBySku");
-        //TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
+        // TracingUtils.putAnnotation(PRODUCT_SKU, productSku);
+        // TracingUtils.putAnnotation(OPERATION_NAME, "getProductBySku");
+        // TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         ProductEntity productEntity = productRepository.findByProductSku(productSku);
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
     }
 
     public List<Product> getAllProducts() {
         logger.info("getting all products");
-        TracingUtils.putAnnotation(OPERATION_NAME, "getAllProducts");
-        TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
+        // TracingUtils.putAnnotation(OPERATION_NAME, "getAllProducts");
+        // TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         List<ProductEntity> allProductEntities = productRepository.findAll();
         logger.info("found {} products", allProductEntities.size());
 
