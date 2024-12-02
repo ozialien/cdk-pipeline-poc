@@ -10,8 +10,18 @@ import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Segment;
 import com.amazonaws.xray.spring.aop.XRayEnabled;
 
+import software.amazon.lambda.powertools.tracing.TracingUtils;
+
 import java.time.ZonedDateTime;
 import java.util.List;
+// String productSku = request.getParameter("productSku");
+
+//                 // Handle null or missing parameter
+//                 if (productSku == null || productSku.isEmpty()) {
+//                     productSku = "NoProductSku";
+//                 }
+//                 LoggingUtils.appendKey(PRODUCT_SKU, productSku);
+//                 TracingUtils.putAnnotation(PRODUCT_SKU, productSku);
 
 /**
  * @author amitkapps
@@ -19,6 +29,9 @@ import java.util.List;
 @Service
 @XRayEnabled
 public class ProductService {
+    private static final String PRODUCT_SKU = "Product-SKU";
+    private static final String OPERATION_NAME = "Operation-Name";
+    private static final String OPERATION_TYPE = "Operation-Type";
 
     @Autowired
     private ProductRepository productRepository;
@@ -27,31 +40,17 @@ public class ProductService {
 
     public Product getProductBySku(String productSku) {
         logger.info("Getting product: {}", productSku);
-        try {
-            Segment segment = AWSXRay.getCurrentSegment();
-            if (segment != null) {
-                segment.putAnnotation("ProductSKU", productSku);
-                segment.putAnnotation("OperationName", "getProductBySku");
-                segment.putAnnotation("OperationType", "JavaFunctionInvoke");
-            }
-        } catch (Exception e) {
-            logger.error("Exception access segment info", e);
-        }
+        //TracingUtils.putAnnotation(PRODUCT_SKU, productSku);
+        //TracingUtils.putAnnotation(OPERATION_NAME, "getProductBySku");
+        //TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         ProductEntity productEntity = productRepository.findByProductSku(productSku);
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
     }
 
     public List<Product> getAllProducts() {
         logger.info("getting all products");
-        try {
-            Segment segment = AWSXRay.getCurrentSegment();
-            if (segment != null) {
-                segment.putAnnotation("OperationName", "getAllProducts");
-                segment.putAnnotation("OperationType", "JavaFunctionInvoke");
-            }
-        } catch (Exception e) {
-            logger.error("Exception access segment info", e);
-        }
+        TracingUtils.putAnnotation(OPERATION_NAME, "getAllProducts");
+        TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         List<ProductEntity> allProductEntities = productRepository.findAll();
         logger.info("found {} products", allProductEntities.size());
 
