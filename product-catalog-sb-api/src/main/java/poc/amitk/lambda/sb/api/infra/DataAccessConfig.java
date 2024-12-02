@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,6 +29,9 @@ public class DataAccessConfig {
     @Autowired
     private SecretsManagerService secretsManagerService;
 
+    @Value("${xray.tracing.enabled}")
+    boolean xrayEnabled;
+
     @Value("${datasource_secret_id}")
     String datasourceSecretId;
 
@@ -35,7 +39,9 @@ public class DataAccessConfig {
     String databaseSchemaName;
 
     /**
-     * Hikari datasource configs ref: <a href="https://github.com/brettwooldridge/HikariCP">...</a>
+     * Hikari datasource configs ref:
+     * <a href="https://github.com/brettwooldridge/HikariCP">...</a>
+     * 
      * @return
      * @throws JsonProcessingException
      */
@@ -45,7 +51,7 @@ public class DataAccessConfig {
 
         HikariConfig config = new HikariConfig();
         Properties props = new Properties();
-        //Add other connection pooling properties - min/max/timeouts/min idle
+        // Add other connection pooling properties - min/max/timeouts/min idle
         config.setPoolName("ProductsConnectionPool");
         config.setDriverClassName("com.mysql.cj.jdbc.Driver");
         Map<String, String> credentialsMap = productsDSCredentials(datasourceSecretId);
@@ -53,13 +59,19 @@ public class DataAccessConfig {
         config.setUsername(credentialsMap.get("username"));
         config.setPassword(credentialsMap.get("password"));
         config.setMaximumPoolSize(2);
-//        props.setProperty("connectionTestQuery", "select 1 from dual"); // only for non-jdbc4-compliant drivers
+        // props.setProperty("connectionTestQuery", "select 1 from dual"); // only for
+        // non-jdbc4-compliant drivers
         props.put("dataSource.logWriter", new PrintWriter(System.out));
 
-        return new HikariDataSource(config);
+        DataSource dataSource = new HikariDataSource(config);
+        if (xrayEnabled) {
+            dataSource = new TracingDataSource(dataSource);
+        }
+        return dataSource;
+
     }
 
-    private String getJdbcUrlFromDatsourceSecret(Map<String, String> credentialsMap){
+    private String getJdbcUrlFromDatsourceSecret(Map<String, String> credentialsMap) {
         String jdbcUrl = "jdbc:mysql://"
                 + credentialsMap.get("host")
                 + ":"
@@ -71,7 +83,7 @@ public class DataAccessConfig {
 
     @Bean
     @Qualifier("productsJdbcTemplate")
-    public JdbcTemplate customerJdbcTemplate(@Qualifier("productsDS") DataSource dataSource){
+    public JdbcTemplate customerJdbcTemplate(@Qualifier("productsDS") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
