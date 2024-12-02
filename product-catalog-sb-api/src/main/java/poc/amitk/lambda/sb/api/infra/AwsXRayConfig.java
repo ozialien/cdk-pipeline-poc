@@ -1,9 +1,7 @@
 package poc.amitk.lambda.sb.api.infra;
 
 import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.AWSXRayRecorder;
 import com.amazonaws.xray.AWSXRayRecorderBuilder;
-import com.amazonaws.xray.entities.Segment;
 import com.amazonaws.xray.jakarta.servlet.AWSXRayServletFilter;
 import com.amazonaws.xray.strategy.jakarta.SegmentNamingStrategy;
 import com.amazonaws.xray.strategy.sampling.LocalizedSamplingStrategy;
@@ -22,17 +20,15 @@ import java.net.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 
 @Configuration
-@EnableAutoConfiguration
-@ConditionalOnProperty(name = "xray.tracing.enabled", havingValue = "true")
 public class AwsXRayConfig {
     // Create a logger instance
-    private static final Logger logger = LoggerFactory.getLogger(StreamLambdaHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(AwsXRayConfig.class);
 
     public class CustomXRayServletFilter extends AWSXRayServletFilter {
         private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
@@ -54,11 +50,9 @@ public class AwsXRayConfig {
 
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-                throws IOException, ServletException {
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("CustomXRayServletFilter is beginning to process request: " + request.toString());
-            }
+                throws IOException, ServletException {            
+            logger.info("CustomXRayServletFilter is beginning to process request: " + request.toString());
+            
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             try {
                 // Retrieve the X-Correlation-ID header
@@ -68,33 +62,36 @@ public class AwsXRayConfig {
                 // Optionally, add these IDs to the logging context
                 if (correlationId != null && !correlationId.isEmpty()) {
                     MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
+                } else {
+                    MDC.put(CORRELATION_ID_MDC_KEY, request.getRequestId());
                 }
                 if (amznTraceId != null && !amznTraceId.isEmpty()) {
-                    MDC.put(TRACE_ID_MDC_KEY, amznTraceId);
+                    MDC.put(TRACE_ID_MDC_KEY, amznTraceId);                    
                 }
                 super.doFilter(request, response, chain);
             } finally {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("CustomXRayServletFilter is finished processing request: " + request.toString());
-                }
+                logger.info("CustomXRayServletFilter is finished processing request: " + request.toString());               
                 // Clean up the MDC to prevent data leakage between threads
                 MDC.remove(CORRELATION_ID_MDC_KEY);
                 MDC.remove(TRACE_ID_MDC_KEY);
             }
         }
-
     }
-
-    ////
-    //
-    // Thits posed problems given that javax.servlet.Filter isn't provided for
-    //// SpringBoot
-    // 3.x services.
-    //
+    /*
+     * @Bean
+     * public Filter TracingFilter() {
+     * CustomXRayServletFilter xrayFilter = new
+     * AwsXRayConfig.CustomXRayServletFilter("ProductCatalogService");
+     * return xrayFilter;
+     * }
+     */
     @Bean
-    public CustomXRayServletFilter TracingFilter() {
-        CustomXRayServletFilter xrayFilter = new AwsXRayConfig.CustomXRayServletFilter("ProductCatalogService");
-        return xrayFilter;
+    public FilterRegistrationBean<CustomXRayServletFilter> tracingFilter() {
+        FilterRegistrationBean<CustomXRayServletFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new CustomXRayServletFilter("ProductCatalogService"));
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return registrationBean;
     }
 
     @PostConstruct
