@@ -55,8 +55,11 @@ public class DataAccessConfig {
         config.setMaximumPoolSize(2);
 //        props.setProperty("connectionTestQuery", "select 1 from dual"); // only for non-jdbc4-compliant drivers
         props.put("dataSource.logWriter", new PrintWriter(System.out));
-
-        return new HikariDataSource(config);
+        DataSource dataSource =  new HikariDataSource(config);
+        if(xrayEnabled) {
+            dataSource = new TracingDataSource(dataSource);
+        }
+        return dataSource;
     }
 
     private String getJdbcUrlFromDatsourceSecret(Map<String, String> credentialsMap){
