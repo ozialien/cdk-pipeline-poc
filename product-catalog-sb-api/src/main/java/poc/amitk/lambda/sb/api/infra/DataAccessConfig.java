@@ -65,15 +65,27 @@ public class DataAccessConfig {
         props.put("dataSource.logWriter", new PrintWriter(System.out));
 
         DataSource dataSource = new HikariDataSource(config);
-        if (xrayEnabled) {
-            dataSource = new TracingDataSource(dataSource);
-        }
+        ////
+        //
+        // This does not work
+        //
+        // if (xrayEnabled) {
+        // dataSource = new TracingDataSource(dataSource);
+        // }
         return dataSource;
 
     }
 
     private String getJdbcUrlFromDatsourceSecret(Map<String, String> credentialsMap) {
-        String jdbcUrl = "jdbc:mysql://"
+        String jdbcUrl = "jdbc";
+        ////
+        //
+        // No work
+        //  
+        // if (xrayEnabled) {
+        // jdbcUrl+=":xray";
+        // }
+        jdbcUrl += ":mysql://"
                 + credentialsMap.get("host")
                 + ":"
                 + String.valueOf(credentialsMap.get("port"))
