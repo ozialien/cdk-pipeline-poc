@@ -1,5 +1,6 @@
 package poc.amitk.lambda.sb.api.infra;
 
+import com.amazonaws.xray.sql.TracingDataSource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

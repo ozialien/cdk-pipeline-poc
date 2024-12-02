@@ -28,7 +28,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-xray-recorder-sdk-sql</artifactId>
+			<version>2.18.2</version> <!-- Use the latest version available -->
+		</dependency>
 		<!--		to add lambda handler that will route to springboot-->
 		<dependency>
 			<groupId>com.amazonaws.serverless</groupId>
@@ -82,6 +86,12 @@
 			<artifactId>aws-xray-recorder-sdk-spring</artifactId>
 			<version>${aws-xray-recorder.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-xray-recorder-sdk-sql</artifactId>
+			<version>${aws-xray-recorder.version}</version> <!-- Use the latest version available -->
+		</dependency>
+
 		<!-- AWS XRAY Tracing End -->
 
 
@@ -90,10 +100,10 @@
 		Just defining these without configuration in spring boot will
 		automatically invoke security and cause a 401
 		Using the apiGateway against Oauth2 might be a better approach
--->	    
+-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>		
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -103,7 +113,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
-	<!-- OAuth2 Dependency End -->
+		<!-- OAuth2 Dependency End -->
 	</dependencies>
 
 	<build>
