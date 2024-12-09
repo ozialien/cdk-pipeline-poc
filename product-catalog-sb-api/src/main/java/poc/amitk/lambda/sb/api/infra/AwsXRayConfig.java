@@ -27,8 +27,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
+// https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-aop-spring.html
 @Configuration
-@XRayEnabled
 public class AwsXRayConfig {
     // Create a logger instance
     private static final Logger logger = LoggerFactory.getLogger(AwsXRayConfig.class);
@@ -87,7 +87,11 @@ public class AwsXRayConfig {
     @Bean
     public FilterRegistrationBean<CustomXRayServletFilter> tracingFilter() {
         FilterRegistrationBean<CustomXRayServletFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new CustomXRayServletFilter("ProductCatalogService"));
+        registrationBean.setFilter(
+            new CustomXRayServletFilter(
+            SegmentNamingStrategy.dynamic("ProductCatalog")
+            )
+        );
         registrationBean.addUrlPatterns("/*");
         registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registrationBean;
