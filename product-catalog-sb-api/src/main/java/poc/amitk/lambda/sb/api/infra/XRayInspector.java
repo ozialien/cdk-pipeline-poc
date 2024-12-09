@@ -1,17 +1,20 @@
 package poc.amitk.lambda.sb.api.infra;
+
 import java.util.Map;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
-
+import com.amazonaws.xray.entities.Subsegment;
 import com.amazonaws.xray.spring.aop.BaseAbstractXRayInterceptor;
 
+//
+// https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-aop-spring.html
 @Aspect
 @Component
 public class XRayInspector extends BaseAbstractXRayInterceptor {    
     @Override    
-    protected Map<String, Map<String, Object>> generateMetadata(ProceedingJoinPoint proceedingJoinPoint, Subsegment subsegment) throws Exception {      
+    protected Map<String, Map<String, Object>> generateMetadata(ProceedingJoinPoint proceedingJoinPoint, Subsegment subsegment) {      
         return super.generateMetadata(proceedingJoinPoint, subsegment);    
     }    
   
