@@ -29,6 +29,7 @@ import org.springframework.core.Ordered;
 
 // https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-aop-spring.html
 @Configuration
+@XRayEnabled
 public class AwsXRayConfig {
     // Create a logger instance
     private static final Logger logger = LoggerFactory.getLogger(AwsXRayConfig.class);
@@ -54,10 +55,9 @@ public class AwsXRayConfig {
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
                 throws IOException, ServletException {
-                    
-            logger.info("CustomXRayServletFilter is beginning to process request: " + request.toString());                    
-            
-            AWSXRay.beginSubsegment("XRayFilter");
+
+            logger.info("CustomXRayServletFilter is beginning to process request: " + request.toString());
+
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             try {
                 // Retrieve the X-Correlation-ID header
@@ -69,17 +69,16 @@ public class AwsXRayConfig {
                     // NOP
                 } else {
                     correlationId = request.getRequestId();
-                }                
+                }
                 LoggingUtils.setCorrelationId(correlationId);
                 TracingUtils.putAnnotation(CORRELATION_ID_MDC_KEY, correlationId);
                 if (amznTraceId != null && !amznTraceId.isEmpty()) {
                     LoggingUtils.appendKey(TRACE_ID_MDC_KEY, amznTraceId);
-                }                
+                }
                 super.doFilter(request, response, chain);
             } finally {
-                logger.info("CustomXRayServletFilter is finished processing request: " + request.toString());                                         
-                AWSXRay.endSubsegment();
-                LoggingUtils.removeKey(TRACE_ID_MDC_KEY);                
+                logger.info("CustomXRayServletFilter is finished processing request: " + request.toString());
+                LoggingUtils.removeKey(TRACE_ID_MDC_KEY);
             }
         }
     }
@@ -88,10 +87,8 @@ public class AwsXRayConfig {
     public FilterRegistrationBean<CustomXRayServletFilter> tracingFilter() {
         FilterRegistrationBean<CustomXRayServletFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(
-            new CustomXRayServletFilter(
-            SegmentNamingStrategy.dynamic("ProductCatalog")
-            )
-        );
+                new CustomXRayServletFilter(
+                        SegmentNamingStrategy.dynamic("ProductCatalog")));
         registrationBean.addUrlPatterns("/*");
         registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registrationBean;
