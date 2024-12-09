@@ -7,15 +7,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Subsegment;
-import software.amazon.lambda.powertools.tracing.TracingUtils;
+//import software.amazon.lambda.powertools.tracing.Tracing;
+//import software.amazon.lambda.powertools.tracing.TracingUtils;
 import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
  * @author amitkapps
  */
-@Service
+
+//
+// This does not work:
+//
+// https://docs.powertools.aws.dev/lambda/java/core/tracing/
+//
+// The following is not compatible with the above. Use one or
+// the other
+//
 // @XRayEnabled Not seeing any evidence of being enacted here.
+@Service
 public class ProductService {
     private static final String PRODUCT_SKU = "Product-SKU";
     private static final String OPERATION_NAME = "Operation-Name";
@@ -26,41 +36,28 @@ public class ProductService {
 
     private Logger logger = LoggerFactory.getLogger(ProductService.class);
 
+    //@Tracing
     public Product getProductBySku(String productSku) {
-        Subsegment subsegment = AWSXRay.beginSubsegment("ProductService#getProductBySku");
-        try {
-            logger.info("Getting product: {}", productSku);
-            TracingUtils.putAnnotation(PRODUCT_SKU, productSku);
-            TracingUtils.putAnnotation(OPERATION_NAME, "getProductBySku");
-            TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
-            ProductEntity productEntity = productRepository.findByProductSku(productSku);
-            return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
-        } catch (Throwable t) {
-            subsegment.addException(t);
-            throw (t);
-        } finally {
-            subsegment.end();
-        }
+        logger.info("Getting product: {}", productSku);
+       // TracingUtils.putAnnotation(PRODUCT_SKU, productSku);
+       // TracingUtils.putAnnotation(OPERATION_NAME, "getProductBySku");
+       // TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
+        ProductEntity productEntity = productRepository.findByProductSku(productSku);
+        return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
+
     }
 
+    //@Tracing
     public List<Product> getAllProducts() {
-        Subsegment subsegment = AWSXRay.beginSubsegment("ProductService#getAllProducts");
-        try {
-            logger.info("getting all products");
-            TracingUtils.putAnnotation(OPERATION_NAME, "getAllProducts");
-            TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
-            List<ProductEntity> allProductEntities = productRepository.findAll();
-            logger.info("found {} products", allProductEntities.size());
+        logger.info("getting all products");
+        // TracingUtils.putAnnotation(OPERATION_NAME, "getAllProducts");
+        // TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
+        List<ProductEntity> allProductEntities = productRepository.findAll();
+        logger.info("found {} products", allProductEntities.size());
 
-            return allProductEntities.stream()
-                    .map(ProductPojoConverter::toProduct)
-                    .toList();
-        } catch (Throwable t) {
-            subsegment.addException(t);
-            throw (t);
-        } finally {
-            subsegment.end();
-        }
+        return allProductEntities.stream()
+                .map(ProductPojoConverter::toProduct)
+                .toList();
     }
 
     @Transactional

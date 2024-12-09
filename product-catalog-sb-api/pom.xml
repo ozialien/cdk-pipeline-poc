@@ -145,6 +145,29 @@
 
 	<build>
 		<plugins>
+		<plugin>
+             <groupId>dev.aspectj</groupId>
+             <artifactId>aspectj-maven-plugin</artifactId>
+             <version>1.13.1</version>
+             <configuration>
+                 <source>${java.version}</source> <!-- or higher -->
+                 <target>${java.version}</target> <!-- or higher -->
+                 <complianceLevel>11</complianceLevel> <!-- or higher -->
+                 <aspectLibraries>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-tracing</artifactId>
+                     </aspectLibrary>
+                 </aspectLibraries>
+             </configuration>
+             <executions>
+                 <execution>
+                     <goals>
+                         <goal>compile</goal>
+                     </goals>
+                 </execution>
+             </executions>
+        </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
