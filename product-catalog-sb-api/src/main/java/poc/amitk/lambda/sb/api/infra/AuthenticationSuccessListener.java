@@ -1,3 +1,5 @@
+package poc.amitk.lambda.sb.api.infra;
+
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
