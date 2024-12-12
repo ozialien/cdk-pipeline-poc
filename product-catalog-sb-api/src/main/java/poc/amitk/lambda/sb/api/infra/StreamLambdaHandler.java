@@ -13,6 +13,8 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Subsegment;
 
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
 
@@ -41,11 +43,17 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             Context context)
             throws IOException {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
+        Subsegment subsegment = AWSXRay.beginSubsegment("ERNEST");
         try {
+            logger.info("{}.{} Subsegment {}", CURRENT_CLASS_NAME, methodName, subsegment.getName());
             logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
             handler.proxyStream(inputStream, outputStream, context);
+        } catch (Throwable t) {
+            subsegment.addException(t);
+            throw t;
         } finally {
             logger.info("Exiting {}.{}", CURRENT_CLASS_NAME, methodName);
+            AWSXRay.endSubsegment(subsegment);
         }
     }
 }

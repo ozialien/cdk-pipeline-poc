@@ -28,7 +28,6 @@ import java.util.List;
  * 
  */
 @Service
-@XRayEnabled
 public class ProductService {
     private static final String PRODUCT_SKU = "Product-SKU";
     private static final String OPERATION_NAME = "Operation-Name";
@@ -39,11 +38,12 @@ public class ProductService {
 
     private Logger logger = LoggerFactory.getLogger(ProductService.class);
 
+    @XRayEnabled
     public Product getProductBySku(String productSku) {
         Subsegment subsegment = AWSXRay.getCurrentSubsegment();
         logger.info("Getting product: {}", productSku);
         if (subsegment != null) {
-            logger.info("Subsegment {}", subsegment.getName());
+            logger.info("getProductBySku Subsegment {}", subsegment.getName());
             subsegment.putAnnotation(PRODUCT_SKU, productSku);
             subsegment.putAnnotation(OPERATION_NAME, "getProductBySku");
             subsegment.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
@@ -52,12 +52,13 @@ public class ProductService {
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
     }
 
+    @XRayEnabled
     public List<Product> getAllProducts() {
         Subsegment subsegment = AWSXRay.getCurrentSubsegment();
         logger.info("getting all products");
         if (subsegment != null) {
 
-            logger.info("Subsegment {}", subsegment.getName());
+            logger.info("getAllProducts Subsegment {}", subsegment.getName());
             subsegment.putAnnotation(OPERATION_NAME, "getAllProducts");
             subsegment.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         }
