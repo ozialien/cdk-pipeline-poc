@@ -2,12 +2,9 @@ package poc.amitk.lambda.sb.api.infra;
 
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.AWSXRayRecorderBuilder;
-import com.amazonaws.xray.jakarta.servlet.AWSXRayServletFilter;
-import com.amazonaws.xray.strategy.jakarta.SegmentNamingStrategy;
 import com.amazonaws.xray.strategy.sampling.LocalizedSamplingStrategy;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
-import io.micrometer.common.lang.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,22 +29,14 @@ public class AwsXRayConfig {
     // Create a logger instance
     private static final Logger logger = LoggerFactory.getLogger(AwsXRayConfig.class);
 
-    public class CustomXRayServletFilter extends AWSXRayServletFilter {
+    public class CustomXRayServletFilter implements jakarta.servlet.Filter { 
         private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
         private static final String TRACE_ID_HEADER = "X-Amzn-Trace-Id";
         private static final String CORRELATION_ID_MDC_KEY = "correlation_id";
         private static final String TRACE_ID_MDC_KEY = "traceId";
 
         public CustomXRayServletFilter() {
-            super((SegmentNamingStrategy) null);
-        }
-
-        public CustomXRayServletFilter(String fixedSegmentName) {
-            super(SegmentNamingStrategy.fixed(fixedSegmentName));
-        }
-
-        public CustomXRayServletFilter(@Nullable SegmentNamingStrategy segmentNamingStrategy) {
-            super(segmentNamingStrategy, null);
+            super();
         }
 
         @Override
@@ -73,7 +62,7 @@ public class AwsXRayConfig {
                 if (amznTraceId != null && !amznTraceId.isEmpty()) {
                     LoggingUtils.appendKey(TRACE_ID_MDC_KEY, amznTraceId);
                 }
-                super.doFilter(request, response, chain);
+                chain.doFilter(request, response);
             } finally {
                 logger.info("CustomXRayServletFilter is finished processing request: " + request.toString());
                 LoggingUtils.removeKey(TRACE_ID_MDC_KEY);
@@ -85,20 +74,10 @@ public class AwsXRayConfig {
     public FilterRegistrationBean<CustomXRayServletFilter> tracingFilter() {
         FilterRegistrationBean<CustomXRayServletFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(
-                new CustomXRayServletFilter(
-                        SegmentNamingStrategy.dynamic("ProductCatalog")));
+                new CustomXRayServletFilter());
         registrationBean.addUrlPatterns("/*");
         registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registrationBean;
     }
 
-    @PostConstruct
-    public void init() {
-        logger.info("Setting up XRay Tracing");
-        AWSXRayRecorderBuilder builder = AWSXRayRecorderBuilder.standard();
-        URL ruleFile = AwsXRayConfig.class.getResource("/sampling-rules.json");
-        builder.withSamplingStrategy(new LocalizedSamplingStrategy(ruleFile));
-        AWSXRay.setGlobalRecorder(builder.build());
-        logger.info("Setting up XRay Tracing Done");
-    }
 }
