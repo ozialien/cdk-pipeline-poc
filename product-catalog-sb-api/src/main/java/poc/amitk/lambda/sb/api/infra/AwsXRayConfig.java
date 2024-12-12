@@ -1,11 +1,6 @@
 package poc.amitk.lambda.sb.api.infra;
 
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.AWSXRayRecorderBuilder;
-import com.amazonaws.xray.strategy.sampling.LocalizedSamplingStrategy;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
-import software.amazon.lambda.powertools.tracing.TracingUtils;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -13,7 +8,6 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
-import java.net.URL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +52,7 @@ public class AwsXRayConfig {
                     correlationId = request.getRequestId();
                 }
                 LoggingUtils.setCorrelationId(correlationId);
-                TracingUtils.putAnnotation(CORRELATION_ID_MDC_KEY, correlationId);
+                // TracingUtils.putAnnotation(CORRELATION_ID_MDC_KEY, correlationId);
                 if (amznTraceId != null && !amznTraceId.isEmpty()) {
                     LoggingUtils.appendKey(TRACE_ID_MDC_KEY, amznTraceId);
                 }

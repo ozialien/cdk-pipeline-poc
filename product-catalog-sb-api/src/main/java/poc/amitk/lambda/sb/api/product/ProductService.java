@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Subsegment;
-import com.amazonaws.xray.spring.aop.XRayEnabled;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -38,7 +37,6 @@ public class ProductService {
 
     private Logger logger = LoggerFactory.getLogger(ProductService.class);
 
-    @XRayEnabled
     public Product getProductBySku(String productSku) {
         Subsegment subsegment = AWSXRay.getCurrentSubsegment();
         logger.info("Getting product: {}", productSku);
@@ -52,7 +50,6 @@ public class ProductService {
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
     }
 
-    @XRayEnabled
     public List<Product> getAllProducts() {
         Subsegment subsegment = AWSXRay.getCurrentSubsegment();
         logger.info("getting all products");
