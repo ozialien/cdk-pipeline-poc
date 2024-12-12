@@ -1,33 +1,27 @@
 {
-    "version": 1,
-    "rules": [
-      {
-        "description": "Resource creation.",
-        "service_name": "*",
-        "http_method": "POST",
-        "url_path": "/products/*",
-        "fixed_target": 1,
-        "rate": 1.0
-      },
-      {
-        "description": "Get All Products.",
-        "service_name": "*",
-        "http_method": "GET",
-        "url_path": "/products",
-        "fixed_target": 0,
-        "rate": 0.05
-      },
-      {
-        "description": "Get Specific Products.",
-        "service_name": "*",
-        "http_method": "GET",
-        "url_path": "/products/*",
-        "fixed_target": 0,
-        "rate": 0.05
-      }
-    ],
-    "default": {
+  "version": 2,
+  "rules": [
+    {
+      "description": "Always sample requests to /products",
+      "service_name": "*",
+      "host": "*",
+      "http_method": "GET",
+      "url_path": "/products",
       "fixed_target": 1,
-      "rate": 0.1
+      "rate": 1.0
+    },
+    {
+      "description": "Always sample requests to /products/{id}",
+      "service_name": "*",
+      "host": "*",
+      "http_method": "GET",
+      "url_path": "/products/*",
+      "fixed_target": 1,
+      "rate": 1.0
     }
+  ],
+  "default": {
+    "fixed_target": 1,
+    "rate": 0.05
   }
+}

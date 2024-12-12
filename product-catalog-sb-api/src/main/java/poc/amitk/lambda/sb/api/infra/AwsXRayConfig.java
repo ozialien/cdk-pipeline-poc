@@ -3,7 +3,6 @@ package poc.amitk.lambda.sb.api.infra;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.AWSXRayRecorderBuilder;
 import com.amazonaws.xray.jakarta.servlet.AWSXRayServletFilter;
-import com.amazonaws.xray.spring.aop.XRayEnabled;
 import com.amazonaws.xray.strategy.jakarta.SegmentNamingStrategy;
 import com.amazonaws.xray.strategy.sampling.LocalizedSamplingStrategy;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
@@ -29,7 +28,6 @@ import org.springframework.core.Ordered;
 
 // https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-aop-spring.html
 @Configuration
-@XRayEnabled
 public class AwsXRayConfig {
     // Create a logger instance
     private static final Logger logger = LoggerFactory.getLogger(AwsXRayConfig.class);
@@ -101,8 +99,6 @@ public class AwsXRayConfig {
         URL ruleFile = AwsXRayConfig.class.getResource("/sampling-rules.json");
         builder.withSamplingStrategy(new LocalizedSamplingStrategy(ruleFile));
         AWSXRay.setGlobalRecorder(builder.build());
-        AWSXRay.beginSegment("setup-xray");
         logger.info("Setting up XRay Tracing Done");
-        AWSXRay.endSegment();
     }
 }

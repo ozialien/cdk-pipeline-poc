@@ -7,13 +7,13 @@ import java.io.OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+
 import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
 
 /**
@@ -21,9 +21,9 @@ import poc.amitk.lambda.sb.api.ProductCatalogSbApiApplication;
  */
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-   
+
     private static final String CURRENT_CLASS_NAME = StreamLambdaHandler.class.getName();
-    
+
     // Create a logger instance
     private static final Logger logger = LoggerFactory.getLogger(StreamLambdaHandler.class);
 
@@ -36,16 +36,14 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         }
     }
 
-
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream,
             Context context)
             throws IOException {
-
         String methodName = new Exception().getStackTrace()[0].getMethodName();
         try {
             logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
-            handler.proxyStream(inputStream, outputStream, context);        
+            handler.proxyStream(inputStream, outputStream, context);
         } finally {
             logger.info("Exiting {}.{}", CURRENT_CLASS_NAME, methodName);
         }

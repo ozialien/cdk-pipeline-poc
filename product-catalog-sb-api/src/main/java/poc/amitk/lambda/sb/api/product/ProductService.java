@@ -5,9 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.amazonaws.xray.spring.aop.XRayEnabled;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Subsegment;
+import com.amazonaws.xray.spring.aop.XRayEnabled;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -42,19 +43,21 @@ public class ProductService {
         Subsegment subsegment = AWSXRay.getCurrentSubsegment();
         logger.info("Getting product: {}", productSku);
         if (subsegment != null) {
+            logger.info("Subsegment {}", subsegment.getName());
             subsegment.putAnnotation(PRODUCT_SKU, productSku);
             subsegment.putAnnotation(OPERATION_NAME, "getProductBySku");
             subsegment.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         }
-        ProductEntity productEntity = productRepository.findByProductSku(productSku);
+        ProductEntity produ ctEntity = productRepository.findByProductSku(productSku);
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
-
     }
 
     public List<Product> getAllProducts() {
         Subsegment subsegment = AWSXRay.getCurrentSubsegment();
         logger.info("getting all products");
         if (subsegment != null) {
+
+            logger.info("Subsegment {}", subsegment.getName());
             subsegment.putAnnotation(OPERATION_NAME, "getAllProducts");
             subsegment.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         }
