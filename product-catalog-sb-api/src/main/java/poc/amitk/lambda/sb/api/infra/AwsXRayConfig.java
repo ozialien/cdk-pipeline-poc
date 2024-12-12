@@ -30,6 +30,7 @@ public class AwsXRayConfig {
     private static final Logger logger = LoggerFactory.getLogger(AwsXRayConfig.class);
 
     public class SubSegmentFilter implements jakarta.servlet.Filter {
+        private static final String CURRENT_CLASS_NAME = StreamLambdaHandler.class.getName();
         private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
         private static final String TRACE_ID_HEADER = "X-Amzn-Trace-Id";
         private static final String CORRELATION_ID_MDC_KEY = "correlation_id";
@@ -39,18 +40,18 @@ public class AwsXRayConfig {
         public SubSegmentFilter() {
             super();
         }
+
         public SubSegmentFilter(String name) {
             this();
             this.subSegmentName = name;
         }
-        
 
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
                 throws IOException, ServletException {
 
-            logger.info("CustomXRayServletFilter is beginning to process request: " + request.toString());
-
+            String methodName = new Exception().getStackTrace()[0].getMethodName();
+            logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
             HttpServletRequest httpRequest = (HttpServletRequest) request;
 
             Subsegment subsegment = AWSXRay.beginSubsegment(this.subSegmentName);
@@ -73,7 +74,7 @@ public class AwsXRayConfig {
                 }
                 chain.doFilter(request, response);
             } finally {
-                logger.info("CustomXRayServletFilter is finished processing request: " + request.toString());
+                logger.info("Exiting {}.{}", CURRENT_CLASS_NAME, methodName);
                 LoggingUtils.removeKey(TRACE_ID_MDC_KEY);
                 AWSXRay.endSubsegment(subsegment);
             }
