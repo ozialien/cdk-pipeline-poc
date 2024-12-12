@@ -48,7 +48,7 @@ public class ProductService {
             subsegment.putAnnotation(OPERATION_NAME, "getProductBySku");
             subsegment.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         }
-        ProductEntity produ ctEntity = productRepository.findByProductSku(productSku);
+        ProductEntity productEntity = productRepository.findByProductSku(productSku);
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
     }
 
