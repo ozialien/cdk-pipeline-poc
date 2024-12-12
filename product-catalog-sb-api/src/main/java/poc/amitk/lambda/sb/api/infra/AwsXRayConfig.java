@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import com.amazonaws.xray.jakarta.servlet.AWSXRayServletFilter;
 
 import java.io.IOException;
 
@@ -28,15 +29,21 @@ public class AwsXRayConfig {
     // Create a logger instance
     private static final Logger logger = LoggerFactory.getLogger(AwsXRayConfig.class);
 
-    public class CustomXRayServletFilter implements jakarta.servlet.Filter {
+    public class SubSegmentFilter implements jakarta.servlet.Filter {
         private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
         private static final String TRACE_ID_HEADER = "X-Amzn-Trace-Id";
         private static final String CORRELATION_ID_MDC_KEY = "correlation_id";
         private static final String TRACE_ID_MDC_KEY = "traceId";
+        private String subSegmentName = "ERNEST";
 
-        public CustomXRayServletFilter() {
+        public SubSegmentFilter() {
             super();
         }
+        public SubSegmentFilter(String name) {
+            this();
+            this.subSegmentName = name;
+        }
+        
 
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -46,7 +53,7 @@ public class AwsXRayConfig {
 
             HttpServletRequest httpRequest = (HttpServletRequest) request;
 
-            Subsegment subsegment = AWSXRay.beginSubsegment("ERNEST");
+            Subsegment subsegment = AWSXRay.beginSubsegment(this.subSegmentName);
             try {
                 // Retrieve the X-Correlation-ID header
                 String correlationId = httpRequest.getHeader(CORRELATION_ID_HEADER);
@@ -74,24 +81,36 @@ public class AwsXRayConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<CustomXRayServletFilter> tracingFilter() {
+    public FilterRegistrationBean<SubSegmentFilter> subSegmentFilter() {
+        logger.debug("Setting up SubSegmentFilter");
+        FilterRegistrationBean<SubSegmentFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new SubSegmentFilter("ERNEST"));
+
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        logger.debug("Setting up SubSegmentFilter Done");
+        return registrationBean;
+    }
+
+    @Bean
+    public FilterRegistrationBean<AWSXRayServletFilter> tracingFilter() {
         logger.debug("Setting up tracingFilter");
-        FilterRegistrationBean<CustomXRayServletFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new CustomXRayServletFilter());
+        FilterRegistrationBean<AWSXRayServletFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new AWSXRayServletFilter("ProductCatalogService"));
         registrationBean.addUrlPatterns("/*");
         registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         logger.debug("Setting up tracingFilter Done");
         return registrationBean;
     }
-/* 
-    @PostConstruct
-    public void init() {
-        logger.info("Setting up XRay Tracing");
-        AWSXRayRecorderBuilder builder = AWSXRayRecorderBuilder.standard();
-        URL ruleFile = AwsXRayConfig.class.getResource("/sampling-rules.json");
-        builder.withSamplingStrategy(new LocalizedSamplingStrategy(ruleFile));
-        AWSXRay.setGlobalRecorder(`builder.build()); 
-        logger.info("Setting up XRay Tracing Done");
-    }
-*/
+    /*
+     * @PostConstruct
+     * public void init() {
+     * logger.info("Setting up XRay Tracing");
+     * AWSXRayRecorderBuilder builder = AWSXRayRecorderBuilder.standard();
+     * URL ruleFile = AwsXRayConfig.class.getResource("/sampling-rules.json");
+     * builder.withSamplingStrategy(new LocalizedSamplingStrategy(ruleFile));
+     * AWSXRay.setGlobalRecorder(`builder.build());
+     * logger.info("Setting up XRay Tracing Done");
+     * }
+     */
 }
