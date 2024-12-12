@@ -38,11 +38,7 @@ public class ProductService {
     private Logger logger = LoggerFactory.getLogger(ProductService.class);
 
     public Product getProductBySku(String productSku) {
-        Subsegment subsegment = AWSXRay.getCurrentSubsegment();
         logger.info("Getting product: {}", productSku);
-        if (subsegment != null) {
-            logger.info("getProductBySku Subsegment {}", subsegment.getName());
-        }
         TracingUtils.putAnnotation(PRODUCT_SKU, productSku);
         TracingUtils.putAnnotation(OPERATION_NAME, "getProductBySku");
         TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
@@ -51,16 +47,11 @@ public class ProductService {
     }
 
     public List<Product> getAllProducts() {
-        Subsegment subsegment = AWSXRay.getCurrentSubsegment();
         logger.info("getting all products");
-        if (subsegment != null) {
-            logger.info("getAllProducts Subsegment {}", subsegment.getName());
-        }
         TracingUtils.putAnnotation(OPERATION_NAME, "getAllProducts");
         TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         List<ProductEntity> allProductEntities = productRepository.findAll();
         logger.info("found {} products", allProductEntities.size());
-
         return allProductEntities.stream()
                 .map(ProductPojoConverter::toProduct)
                 .toList();
