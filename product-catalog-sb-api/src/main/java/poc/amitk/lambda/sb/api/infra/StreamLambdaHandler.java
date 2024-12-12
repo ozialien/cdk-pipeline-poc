@@ -43,17 +43,11 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             Context context)
             throws IOException {
         String methodName = new Exception().getStackTrace()[0].getMethodName();
-        Subsegment subsegment = AWSXRay.beginSubsegment("ERNEST");
         try {
-            logger.info("{}.{} Subsegment {}", CURRENT_CLASS_NAME, methodName, subsegment.getName());
             logger.info("Entering {}.{}", CURRENT_CLASS_NAME, methodName);
             handler.proxyStream(inputStream, outputStream, context);
-        } catch (Throwable t) {
-            subsegment.addException(t);
-            throw t;
         } finally {
             logger.info("Exiting {}.{}", CURRENT_CLASS_NAME, methodName);
-            AWSXRay.endSubsegment(subsegment);
         }
     }
 }

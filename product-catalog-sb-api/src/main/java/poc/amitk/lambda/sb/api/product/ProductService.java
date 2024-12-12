@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Subsegment;
-
+import software.amazon.lambda.powertools.tracing.TracingUtils;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -28,9 +28,9 @@ import java.util.List;
  */
 @Service
 public class ProductService {
-    private static final String PRODUCT_SKU = "Product-SKU";
-    private static final String OPERATION_NAME = "Operation-Name";
-    private static final String OPERATION_TYPE = "Operation-Type";
+    private static final String PRODUCT_SKU = "productSKU";
+    private static final String OPERATION_NAME = "opname";
+    private static final String OPERATION_TYPE = "optype";
 
     @Autowired
     private ProductRepository productRepository;
@@ -42,10 +42,10 @@ public class ProductService {
         logger.info("Getting product: {}", productSku);
         if (subsegment != null) {
             logger.info("getProductBySku Subsegment {}", subsegment.getName());
-            subsegment.putAnnotation(PRODUCT_SKU, productSku);
-            subsegment.putAnnotation(OPERATION_NAME, "getProductBySku");
-            subsegment.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         }
+        TracingUtils.putAnnotation(PRODUCT_SKU, productSku);
+        TracingUtils.putAnnotation(OPERATION_NAME, "getProductBySku");
+        TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         ProductEntity productEntity = productRepository.findByProductSku(productSku);
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
     }
@@ -54,11 +54,10 @@ public class ProductService {
         Subsegment subsegment = AWSXRay.getCurrentSubsegment();
         logger.info("getting all products");
         if (subsegment != null) {
-
             logger.info("getAllProducts Subsegment {}", subsegment.getName());
-            subsegment.putAnnotation(OPERATION_NAME, "getAllProducts");
-            subsegment.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         }
+        TracingUtils.putAnnotation(OPERATION_NAME, "getAllProducts");
+        TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         List<ProductEntity> allProductEntities = productRepository.findAll();
         logger.info("found {} products", allProductEntities.size());
 
