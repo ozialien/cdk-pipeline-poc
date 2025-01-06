@@ -1,4 +1,5 @@
 package poc.amitk.lambda.sb.api.infra;
+import com.amazonaws.xray.sql.TracingDataSource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -27,7 +28,7 @@ public class DataAccessConfig {
     @Autowired
     private SecretsManagerService secretsManagerService;
 
-    @Value("${xray.tracing.enabled}")
+    @Value("${xray.db.tracing}")
     boolean xrayEnabled;
 
     @Value("${datasource_secret_id}")
@@ -61,14 +62,10 @@ public class DataAccessConfig {
         // non-jdbc4-compliant drivers
         props.put("dataSource.logWriter", new PrintWriter(System.out));
 
-        DataSource dataSource = new HikariDataSource(config);
-        ////
-        //
-        // This does not work
-        //
-        // if (xrayEnabled) {
-        // dataSource = new TracingDataSource(dataSource);
-        // }
+        DataSource dataSource = new HikariDataSource(config);        
+     //   if (xrayEnabled) {
+     //       dataSource = TracingDataSource.decorate(dataSource);
+     //   }
         return dataSource;
 
     }
