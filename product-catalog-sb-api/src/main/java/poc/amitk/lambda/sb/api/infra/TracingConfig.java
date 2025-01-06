@@ -10,7 +10,7 @@ import org.springframework.core.Ordered;
 import com.amazonaws.xray.jakarta.servlet.AWSXRayServletFilter;
 import com.amazonaws.xray.strategy.jakarta.SegmentNamingStrategy;
 
-// https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-aop-spring.html
+// https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html
 @Configuration
 public class TracingConfig {
     // Create a logger instance
