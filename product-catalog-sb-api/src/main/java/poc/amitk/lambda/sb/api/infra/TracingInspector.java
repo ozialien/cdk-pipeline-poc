@@ -10,13 +10,14 @@ import org.springframework.stereotype.Component;
 import com.amazonaws.xray.entities.Subsegment;
 import com.amazonaws.xray.spring.aop.BaseAbstractXRayInterceptor;
 
+// https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-aop-spring.html#xray-sdk-java-aop-activate-xray
 @Aspect
 @Component
 public class TracingInspector extends BaseAbstractXRayInterceptor {
     @Override
     protected Map<String, Map<String, Object>> generateMetadata(
             ProceedingJoinPoint proceedingJoinPoint,
-            Subsegment subsegment) {
+            Subsegment subsegment)  {
         return super.generateMetadata(proceedingJoinPoint, subsegment);
     }
 

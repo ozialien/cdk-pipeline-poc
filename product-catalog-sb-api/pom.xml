@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.2.3</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<relativePath />
+		<!-- lookup parent from repository -->
 	</parent>
 	<groupId>poc-amitk</groupId>
 	<artifactId>product-catalog-sb-api</artifactId>
@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-xray-recorder-sdk-sql</artifactId>
-			<version>2.18.2</version> <!-- Use the latest version available -->
+			<version>2.18.2</version>			<!-- Use the latest version available -->
 		</dependency>
 		<!--		to add lambda handler that will route to springboot-->
 		<dependency>
@@ -57,6 +57,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<!-- Important for @XRayEnabled in Spring -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
 		</dependency>
 		<!--        For faking data, mocking business logic -->
 		<dependency>
@@ -90,12 +95,12 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-xray-recorder-sdk-sql</artifactId>
-			<version>${aws-xray-recorder.version}</version> <!-- Use the latest version available -->
-		</dependency>		
+			<version>${aws-xray-recorder.version}</version>			<!-- Use the latest version available -->
+		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-xray-recorder-sdk-sql-mysql</artifactId>
-			<version>${aws-xray-recorder.version}</version> <!-- Use the latest version available -->
+			<version>${aws-xray-recorder.version}</version>			<!-- Use the latest version available -->
 		</dependency>
 		<!-- AWS XRAY Tracing End -->
 
