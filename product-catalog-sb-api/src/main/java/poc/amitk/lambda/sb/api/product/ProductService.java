@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Subsegment;
+import com.amazonaws.xray.spring.aop.XRayEnabled;
+
 import software.amazon.lambda.powertools.tracing.TracingUtils;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -27,6 +29,7 @@ import java.util.List;
  * 
  */
 @Service
+@XRayEnabled
 public class ProductService {
     private static final String PRODUCT_SKU = "productSKU";
     private static final String OPERATION_NAME = "opname";

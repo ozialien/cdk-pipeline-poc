@@ -1,8 +1,10 @@
 package poc.amitk.lambda.sb.api.infra;
-import com.amazonaws.xray.sql.TracingDataSource;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+import java.io.PrintWriter;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,24 +14,19 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-import java.io.PrintWriter;
-import java.util.Map;
-import java.util.Properties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * @author amitkapps
  */
 @Configuration
 public class DataAccessConfig {
-
     private Logger logger = LoggerFactory.getLogger(DataAccessConfig.class);
 
     @Autowired
     private SecretsManagerService secretsManagerService;
-
-    @Value("${xray.db.tracing}")
-    boolean xrayEnabled;
 
     @Value("${datasource_secret_id}")
     String datasourceSecretId;
@@ -58,14 +55,19 @@ public class DataAccessConfig {
         config.setUsername(credentialsMap.get("username"));
         config.setPassword(credentialsMap.get("password"));
         config.setMaximumPoolSize(2);
+        
         // props.setProperty("connectionTestQuery", "select 1 from dual"); // only for
         // non-jdbc4-compliant drivers
         props.put("dataSource.logWriter", new PrintWriter(System.out));
 
         DataSource dataSource = new HikariDataSource(config);        
-     //   if (xrayEnabled) {
-     //       dataSource = TracingDataSource.decorate(dataSource);
-     //   }
+        ////
+        //
+        // Does not work in Lambda
+        //
+        // if (xrayEnabled) {
+        //    dataSource = TracingDataSource.decorate(dataSource);
+        // }
         return dataSource;
 
     }

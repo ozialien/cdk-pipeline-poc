@@ -19,6 +19,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.Filter;
 
 // https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html
+// https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-aop-spring.html#xray-sdk-java-aop-annotate-or-implement
 @Configuration
 public class TracingConfig {
     // Create a logger instance
