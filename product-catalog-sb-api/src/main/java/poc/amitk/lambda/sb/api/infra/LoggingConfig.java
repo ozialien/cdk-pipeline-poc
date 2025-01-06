@@ -1,24 +1,25 @@
 package poc.amitk.lambda.sb.api.infra;
 
-import software.amazon.lambda.powertools.logging.LoggingUtils;
-import software.amazon.lambda.powertools.tracing.TracingUtils;
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Subsegment;
+
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Subsegment;
-
+import software.amazon.lambda.powertools.logging.LoggingUtils;
+import software.amazon.lambda.powertools.tracing.TracingUtils;
 
 @Configuration
 public class LoggingConfig {
@@ -39,11 +40,11 @@ public class LoggingConfig {
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
                 throws IOException, ServletException {
 
-            logger.info("CustomXRayServletFilter is beginning to process request: " + request.toString());
+            logger.info("CustomLoggingServletFilter is beginning to process request: " + request.toString());
 
             HttpServletRequest httpRequest = (HttpServletRequest) request;
 
-            Subsegment subsegment = AWSXRay.beginSubsegment("ERNEST");
+            Subsegment subsegment = AWSXRay.beginSubsegment("CustomLoggingServletFilter");
             try {
                 // Retrieve the X-Correlation-ID header
                 String correlationId = httpRequest.getHeader(CORRELATION_ID_HEADER);
@@ -71,14 +72,24 @@ public class LoggingConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<CustomLoggingServletFilter> tracingFilter() {
-        logger.debug("Setting up tracingFilter");
-        FilterRegistrationBean<CustomLoggingServletFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new CustomLoggingServletFilter());
-        registrationBean.addUrlPatterns("/*");
-        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        logger.debug("Setting up tracingFilter Done");
-        return registrationBean;
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public Filter LoggingFilter() {
+        return new CustomLoggingServletFilter();
     }
 
+    /*
+     * @Bean
+     * 
+     * @Order()
+     * public FilterRegistrationBean<CustomLoggingServletFilter> tracingFilter() {
+     * logger.debug("Setting up tracingFilter");
+     * FilterRegistrationBean<CustomLoggingServletFilter> registrationBean = new
+     * FilterRegistrationBean<>();
+     * registrationBean.setFilter(new CustomLoggingServletFilter());
+     * registrationBean.addUrlPatterns("/*");
+     * registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+     * logger.debug("Setting up tracingFilter Done");
+     * return registrationBean;
+     * }
+     */
 }
