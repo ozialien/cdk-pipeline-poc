@@ -11,8 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.amazonaws.xray.spring.aop.XRayEnabled;
 
-import software.amazon.lambda.powertools.tracing.TracingUtils;
-
 /**
  * @author amitkapps
  * 
@@ -31,10 +29,7 @@ import software.amazon.lambda.powertools.tracing.TracingUtils;
 @Service
 @XRayEnabled
 public class ProductService {
-    private static final String PRODUCT_SKU = "productSKU";
-    private static final String OPERATION_NAME = "opname";
-    private static final String OPERATION_TYPE = "optype";
-
+  
     @Autowired
     private ProductRepository productRepository;
 
@@ -42,17 +37,12 @@ public class ProductService {
 
     public Product getProductBySku(String productSku) {
         logger.info("Getting product: {}", productSku);
-        TracingUtils.putAnnotation(PRODUCT_SKU, productSku);
-        TracingUtils.putAnnotation(OPERATION_NAME, "getProductBySku");
-        TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         ProductEntity productEntity = productRepository.findByProductSku(productSku);
         return null != productEntity ? ProductPojoConverter.toProduct(productEntity) : null;
     }
 
     public List<Product> getAllProducts() {
         logger.info("getting all products");
-        TracingUtils.putAnnotation(OPERATION_NAME, "getAllProducts");
-        TracingUtils.putAnnotation(OPERATION_TYPE, "JavaFunctionInvoke");
         List<ProductEntity> allProductEntities = productRepository.findAll();
         logger.info("found {} products", allProductEntities.size());
         return allProductEntities.stream()
