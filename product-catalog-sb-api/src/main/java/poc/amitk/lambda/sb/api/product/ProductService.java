@@ -27,7 +27,6 @@ import com.amazonaws.xray.spring.aop.XRayEnabled;
  * 
  */
 @Service
-@XRayEnabled
 public class ProductService {
   
     @Autowired

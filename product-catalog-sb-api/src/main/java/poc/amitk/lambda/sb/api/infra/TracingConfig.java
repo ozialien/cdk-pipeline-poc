@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
 import com.amazonaws.xray.jakarta.servlet.AWSXRayServletFilter;
@@ -20,7 +19,7 @@ public class TracingConfig {
     private static final Logger logger = LoggerFactory.getLogger(TracingConfig.class);
 
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @Order(1)
     public Filter TracingFilter() {
         return new AWSXRayServletFilter(SegmentNamingStrategy.dynamic("MatsonTest"));
     }
