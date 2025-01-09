@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amazonaws.xray.spring.aop.XRayEnabled;
-
 /**
  * @author amitkapps
  * 
@@ -27,7 +25,6 @@ import com.amazonaws.xray.spring.aop.XRayEnabled;
  * 
  */
 @Service
-@XRayEnabled
 public class ProductService {
   
     private final ProductRepository productRepository;
@@ -46,8 +43,10 @@ public class ProductService {
     }
 
     public List<Product> getAllProducts() {
-        logger.info("getting all products");
+        logger.info("getting all products");        
+    //    TracingUtils.putAnnotation("Ernest", "getAllProducts");        
         List<ProductEntity> allProductEntities = productRepository.findAll();
+    //    TracingUtils.putMetadata("ErnestMetadata", allProductEntities);
         logger.info("found {} products", allProductEntities.size());
         return allProductEntities.stream()
                 .map(ProductPojoConverter::toProduct)

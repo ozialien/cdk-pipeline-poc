@@ -23,7 +23,7 @@ public class TracingConfig {
     private static final Logger logger = LoggerFactory.getLogger(TracingConfig.class);
 
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @Order(1)
     public Filter TracingFilter() {
         return new AWSXRayServletFilter(SegmentNamingStrategy.dynamic("MatsonTest"));
     }

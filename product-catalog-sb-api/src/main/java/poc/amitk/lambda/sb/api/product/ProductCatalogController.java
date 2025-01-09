@@ -14,10 +14,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.amazonaws.xray.spring.aop.XRayEnabled;
+
 /**
  * @author amitkapps
  */
 @RestController()
+@XRayEnabled
 @RequestMapping("/products")
 public class ProductCatalogController {
     private Logger logger = LoggerFactory.getLogger(ProductCatalogController.class);
