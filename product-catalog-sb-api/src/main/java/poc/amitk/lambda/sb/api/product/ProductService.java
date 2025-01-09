@@ -30,11 +30,15 @@ import com.amazonaws.xray.spring.aop.XRayEnabled;
 @XRayEnabled
 public class ProductService {
   
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
     private Logger logger = LoggerFactory.getLogger(ProductService.class);
 
+    @Autowired    
+    public ProductService(ProductRepository myEntityRepository) {        
+        this.productRepository = myEntityRepository;    
+    }    
+    
     public Product getProductBySku(String productSku) {
         logger.info("Getting product: {}", productSku);
         ProductEntity productEntity = productRepository.findByProductSku(productSku);

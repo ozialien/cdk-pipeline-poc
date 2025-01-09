@@ -13,6 +13,9 @@ import com.amazonaws.xray.strategy.jakarta.SegmentNamingStrategy;
 import jakarta.servlet.Filter;
 
 // https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html
+// https://aws.amazon.com/blogs/devops/aspect-oriented-programming-for-aws-x-ray-using-spring/
+// https://github.com/aws/aws-xray-sdk-java
+// https://github.com/aws/aws-xray-sdk-java/tree/master/aws-xray-recorder-sdk-spring/src/main/java/com/amazonaws/xray/spring/aop
 // https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-aop-spring.html#xray-sdk-java-aop-annotate-or-implement
 @Configuration
 public class TracingConfig {
